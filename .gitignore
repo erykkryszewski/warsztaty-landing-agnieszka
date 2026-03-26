@@ -1,0 +1,43 @@
+# Environment
+/.env
+/.env.local
+/.env.*.local
+
+# Dependencies
+/vendor
+/node_modules
+/package-lock.json
+/composer.lock
+
+# Build assets (regenerate with npm run build)
+/public/assets/build
+
+# Database (handled separately, not in version control)
+*.db
+*.sqlite
+*.sqlite3
+
+# User uploads (handled separately)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Video files (handled separately)
+/public/assets/images/client/video.mp4
+
+# Logs & cache
+/storage/logs/*.log
+/storage/cache/*
+!/storage/logs/.gitkeep
+!/storage/cache/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Misc
+.history/

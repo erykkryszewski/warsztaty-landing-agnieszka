@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(php database/migrate.php)",
+      "Bash(php database/seed.php)",
+      "Bash(php -r \"echo password_hash\\(''pass'', PASSWORD_DEFAULT\\);\")",
+      "Bash(c:/xampp/mysql/bin/mysql -u root ercoding_cms -e \"UPDATE users SET password_hash = ''$2y$10$31PdvgbSP4lvUUdJiOxBSuDmFDO4s5mqQPFPv2SzgFQ9qiVI8XiGK'' WHERE email = ''admin@example.pl''; SELECT id, name, email FROM users;\")",
+      "Bash(php reset.php --confirm)",
+      "Bash(npx vite:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root -e \"SHOW DATABASES LIKE ''ercoding_cms'';\")",
+      "Bash(\"c:/xampp/php/php.exe\" database/migrate.php)",
+      "Bash(\"c:/xampp/php/php.exe\" reset.php --confirm)",
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT page_key FROM pages; SELECT section_key FROM settings; SELECT COUNT\\(*\\) as blog_count FROM blog_posts; SELECT COUNT\\(*\\) as msg_count FROM contact_messages; SELECT email, role FROM users;\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost/warsztaty-landing/public/\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost/warsztaty-landing/public/admin/\")",
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT content_json FROM settings WHERE section_key=''business'';\")",
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT content_json FROM pages WHERE page_key=''home'';\")",
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT title, external_url FROM blog_posts;\")",
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT content_json FROM settings WHERE section_key=''social_links'';\")"
+    ]
+  }
+}

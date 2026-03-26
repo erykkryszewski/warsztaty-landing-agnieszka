@@ -1,0 +1,43 @@
+@media (max-width: 720px) {
+  .site-header__inner {
+    border-radius: 1.2rem;
+  }
+
+  .site-nav__list {
+    gap: 0.65rem;
+    font-size: 0.95rem;
+  }
+
+  .hero {
+    padding: 3.5rem 0 2rem;
+  }
+
+  .hero--home .container,
+  .hero--inner .container {
+    padding: 1.75rem 1.25rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vw, 2.8rem);
+  }
+
+  .section {
+    padding: 3rem 0;
+  }
+
+  .cta-box {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .post-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .site-footer__grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 1.5rem;
+  }
+}

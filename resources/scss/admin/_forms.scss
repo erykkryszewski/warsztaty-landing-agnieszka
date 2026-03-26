@@ -1,0 +1,237 @@
+// Stacked form
+
+.admin-form--stacked {
+  display: grid;
+  gap: 1.25rem;
+}
+
+// Field
+
+.admin-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.admin-field__label {
+  font-weight: 600;
+  font-size: 0.92rem;
+
+  i {
+    color: #5a5670;
+    font-size: 0.85rem;
+  }
+}
+
+.admin-field__help {
+  color: #5a5670;
+  font-size: 0.85rem;
+}
+
+.admin-field__error {
+  color: #c0392b;
+  font-size: 0.85rem;
+}
+
+// Inputs
+
+.admin-form input[type="text"],
+.admin-form input[type="email"],
+.admin-form input[type="url"],
+.admin-form input[type="password"],
+.admin-form input[type="datetime-local"],
+.admin-form textarea,
+.admin-form select,
+.contact-form input,
+.contact-form textarea {
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(35, 25, 57, 0.12);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 0.95rem;
+  color: #1a1a2e;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #db2d7e;
+    box-shadow: 0 0 0 3px rgba(219, 45, 126, 0.1);
+  }
+
+  &::placeholder {
+    color: #b0a8c0;
+  }
+}
+
+.admin-form input[type="file"] {
+  padding: 0.6rem;
+  border: 1px dashed rgba(35, 25, 57, 0.15);
+  border-radius: 10px;
+  background: #f9f7fc;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #db2d7e;
+    background: rgba(219, 45, 126, 0.03);
+  }
+}
+
+.admin-form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a5670' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.5rem;
+}
+
+// Media preview
+
+.admin-media-field {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.admin-media-card {
+  position: relative;
+  width: fit-content;
+  max-width: min(240px, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(35, 25, 57, 0.08);
+  border-radius: 12px;
+  background: #f9f7fc;
+  transition: opacity 0.15s ease;
+
+  &.is-pending-remove {
+    opacity: 0.42;
+  }
+
+  img {
+    display: block;
+    width: min(240px, 100%);
+    max-width: 100%;
+    border-radius: 12px;
+  }
+}
+
+.admin-media-card__remove {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(192, 57, 43, 0.92);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(26, 26, 46, 0.18);
+  transition: transform 0.15s ease, filter 0.15s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    filter: brightness(1.05);
+  }
+}
+
+.admin-media-card__badge {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  display: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(26, 26, 46, 0.9);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-media-card.is-pending-remove .admin-media-card__badge {
+  display: inline-flex;
+}
+
+// Repeater
+
+.admin-repeater {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-repeater__item {
+  padding: 1rem;
+  border: 1px solid rgba(35, 25, 57, 0.08);
+  border-radius: 12px;
+  background: #f9f7fc;
+}
+
+.admin-repeater__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(35, 25, 57, 0.06);
+
+  strong {
+    font-size: 0.9rem;
+    color: #5a5670;
+  }
+}
+
+.admin-repeater__add {
+  justify-self: start;
+}
+
+// Admin buttons
+
+.admin-form .button,
+.admin-panel .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.4rem;
+  border: 0;
+  border-radius: 999px;
+  background: #db2d7e;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: #231939;
+  }
+}
+
+.admin-form__submit {
+  justify-self: start;
+  padding: 1rem 1.65rem;
+}
+
+.admin-auth-card .button {
+  width: 100%;
+}
+
+.contact-form small {
+  color: #c0392b;
+  font-size: 0.85rem;
+}
+
+.contact-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.contact-form label {
+  display: grid;
+  gap: 0.4rem;
+}

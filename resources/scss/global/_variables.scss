@@ -1,0 +1,26 @@
+:root {
+  --color-brand: #315740;
+  --color-brand-strong: color-mix(in srgb, var(--color-brand) 82%, black 18%);
+  --color-accent: #cf8f73;
+  --color-text: #1f2c25;
+  --color-text-inverse: #fbf4ea;
+  --color-bg: #f6eee2;
+  --color-bg-soft: #efe2d0;
+  --color-surface: rgba(255, 247, 238, 0.82);
+  --color-surface-strong: #f0ddc9;
+  --color-surface-accent: #eed6c6;
+  --color-muted: color-mix(in srgb, var(--color-text) 72%, white 28%);
+  --color-line: color-mix(in srgb, var(--color-brand) 20%, white 80%);
+  --color-line-strong: color-mix(in srgb, var(--color-brand) 38%, white 62%);
+  --color-danger: #b2483f;
+  --color-success: #4c8b63;
+  --radius-sm: 18px;
+  --radius-md: 32px;
+  --radius-lg: 46px;
+  --shadow-soft: 0 28px 72px rgba(31, 44, 37, 0.10);
+  --shadow-card: 0 18px 38px rgba(31, 44, 37, 0.10);
+  --font-body: 'Manrope', 'Segoe UI', sans-serif;
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --container: min(1180px, calc(100% - 2rem));
+  --container-narrow: min(860px, calc(100% - 2rem));
+}

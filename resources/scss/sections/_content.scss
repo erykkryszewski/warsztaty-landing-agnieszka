@@ -1,0 +1,31 @@
+.cta-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cta-minimal {
+  text-align: center;
+  padding: 2rem 0 3rem;
+
+  h2 {
+    max-width: 600px;
+    margin: 0 auto 1.75rem;
+    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+    line-height: 1.25;
+    color: var(--color-text);
+  }
+}
+
+.post-cover {
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius-md);
+}
+
+.error-page {
+  min-height: 60vh;
+  display: grid;
+  align-items: center;
+}

@@ -1,0 +1,21 @@
+.hero {
+  padding: 5rem 0 3rem;
+}
+
+.hero--home .container,
+.hero--inner .container {
+  padding: 2.25rem;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(135deg, rgba(35, 25, 57, 0.96), rgba(26, 16, 41, 0.96)),
+    #231939;
+  color: #fff;
+  box-shadow: var(--shadow-soft);
+}
+
+.hero__lead {
+  max-width: 700px;
+  margin: 1.25rem 0 2rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1.08rem;
+}

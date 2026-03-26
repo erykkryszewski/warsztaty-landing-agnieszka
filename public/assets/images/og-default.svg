@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#1D3D2C"/>
+  <circle cx="164" cy="112" r="180" fill="#C88B4A" fill-opacity=".22"/>
+  <circle cx="1020" cy="570" r="260" fill="#325B43" fill-opacity=".55"/>
+  <text x="88" y="268" fill="#F7F2E8" font-family="Georgia, serif" font-size="72" font-weight="700">Mini CMS Starter</text>
+  <text x="88" y="356" fill="#E4D8C6" font-family="Arial, sans-serif" font-size="34">Lekki, opiniotwórczy starter PHP dla małych stron firmowych</text>
+</svg>

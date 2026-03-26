@@ -1,0 +1,77 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.95rem 1.4rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--color-accent);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text-inverse);
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--color-accent) 86%, black 14%);
+}
+
+.button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 45%, white 55%);
+  outline-offset: 3px;
+}
+
+.button--secondary {
+  background: var(--color-brand-strong);
+}
+
+.button--secondary:hover {
+  background: color-mix(in srgb, var(--color-brand-strong) 88%, black 12%);
+}
+
+.button--outline,
+.button--ghost {
+  border-color: var(--color-line-strong);
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-text);
+}
+
+.button--outline:hover,
+.button--ghost:hover {
+  background: color-mix(in srgb, var(--color-brand) 12%, white 88%);
+  color: var(--color-text);
+}
+
+.button--small {
+  min-height: 2.75rem;
+  padding: 0.72rem 1rem;
+  font-size: 0.92rem;
+}
+
+.button--white {
+  background: var(--color-text-inverse);
+  color: var(--color-brand-strong);
+}
+
+.button--white:hover {
+  background: color-mix(in srgb, var(--color-text-inverse) 84%, var(--color-brand) 16%);
+}
+
+.button--danger {
+  background: var(--color-danger);
+}
+
+.button--danger:hover {
+  background: color-mix(in srgb, var(--color-danger) 84%, black 16%);
+}
