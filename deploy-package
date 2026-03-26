@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Core\Env;
+use App\Deployment\DeployPackageBuilder;
+
+define('BASE_PATH', __DIR__);
+
+require BASE_PATH . '/vendor/autoload.php';
+
+Env::load(BASE_PATH . '/.env');
+
+$builder = new DeployPackageBuilder(BASE_PATH);
+$result = $builder->build();
+
+echo 'Deploy package created: ' . $result['path'] . PHP_EOL;
+echo 'Install key: ' . $result['install_key'] . PHP_EOL;
+echo 'Instructions: ' . BASE_PATH . '/deploy/INSTALL_INSTRUCTIONS.txt' . PHP_EOL;
