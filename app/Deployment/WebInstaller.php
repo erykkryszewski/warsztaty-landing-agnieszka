@@ -94,23 +94,7 @@ class WebInstaller
         );
 
         $pdo = $this->connectToDatabase($host, $port, $database, $user, $password, $charset);
-        $snapshot = $this->snapshot();
-
-        $pdo->exec('SET FOREIGN_KEY_CHECKS=0');
-
-        foreach ($snapshot['tables'] ?? [] as $table) {
-            $tableName = (string) ($table['name'] ?? '');
-
-            if ($tableName === '') {
-                continue;
-            }
-
-            $pdo->exec('DROP TABLE IF EXISTS `' . str_replace('`', '``', $tableName) . '`');
-            $pdo->exec((string) ($table['create_sql'] ?? ''));
-            $this->insertRows($pdo, $tableName, $table['rows'] ?? []);
-        }
-
-        $pdo->exec('SET FOREIGN_KEY_CHECKS=1');
+        (new SnapshotRestorer())->restore($pdo, $this->snapshot());
 
         $this->writeEnvFile([
             'APP_URL' => $this->detectedAppUrl(),
@@ -126,6 +110,7 @@ class WebInstaller
         (new SeedRunner())->run($app);
 
         $this->writeInstallLock();
+        $this->writeDeployedLock((string) ($config['generated_at'] ?? ''));
     }
 
     private function connectToServer(string $host, int $port, string $user, string $password, string $charset): PDO
@@ -154,33 +139,6 @@ class WebInstaller
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]
         );
-    }
-
-    private function insertRows(PDO $pdo, string $tableName, array $rows): void
-    {
-        if ($rows === []) {
-            return;
-        }
-
-        $columns = array_keys($rows[0]);
-        $columnSql = implode(', ', array_map(
-            static fn (string $column): string => '`' . str_replace('`', '``', $column) . '`',
-            $columns
-        ));
-        $placeholders = implode(', ', array_fill(0, count($columns), '?'));
-        $statement = $pdo->prepare(
-            'INSERT INTO `' . str_replace('`', '``', $tableName) . '` (' . $columnSql . ') VALUES (' . $placeholders . ')'
-        );
-
-        foreach ($rows as $row) {
-            $values = [];
-
-            foreach ($columns as $column) {
-                $values[] = $row[$column] ?? null;
-            }
-
-            $statement->execute($values);
-        }
     }
 
     private function writeEnvFile(array $databaseOverrides): void
@@ -229,6 +187,21 @@ class WebInstaller
         if (file_put_contents($path, $contents . PHP_EOL) === false) {
             throw new RuntimeException('Nie udało się zapisać pliku blokady instalacji.');
         }
+    }
+
+    private function writeDeployedLock(string $generatedAt): void
+    {
+        if ($generatedAt === '') {
+            return;
+        }
+
+        $path = $this->basePath . '/storage/app/deployed.lock';
+        $contents = json_encode([
+            'generated_at' => $generatedAt,
+            'synced_at' => date(DATE_ATOM),
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+        file_put_contents($path, $contents . PHP_EOL);
     }
 
     private function render(array $errors, array $old): string

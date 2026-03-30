@@ -53,7 +53,7 @@ class DeployPackageBuilder
             $this->deleteDirectory($this->deployPath);
         }
 
-        if (!mkdir($concurrentDirectory = $this->deployPath, 0777, true) && !is_dir($concurrentDirectory)) {
+        if (!is_dir($this->deployPath) && !mkdir($concurrentDirectory = $this->deployPath, 0777, true) && !is_dir($concurrentDirectory)) {
             throw new RuntimeException('Unable to create deploy directory.');
         }
     }

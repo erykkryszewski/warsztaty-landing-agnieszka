@@ -7,6 +7,7 @@ $isHome = ($page['key'] ?? '') === 'home';
 $hero = $isHome ? page_group($page, 'hero') : [];
 $ctaLabel = trim((string) ($hero['primary_cta_label'] ?? ''));
 $ctaUrl = content_link($hero['primary_cta_url'] ?? '', '#rezerwacja');
+$ctaExternal = opens_in_new_tab($hero['primary_cta_url'] ?? '');
 ?>
 <header class="site-header">
     <div class="container site-header__inner">
@@ -25,7 +26,7 @@ $ctaUrl = content_link($hero['primary_cta_url'] ?? '', '#rezerwacja');
         </a>
 
         <?php if ($isHome && $ctaLabel !== ''): ?>
-            <a class="button site-header__cta" href="<?= e($ctaUrl) ?>"><?= e($ctaLabel) ?></a>
+            <a class="button site-header__cta" href="<?= e($ctaUrl) ?>"<?= $ctaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>><?= e($ctaLabel) ?></a>
         <?php endif; ?>
     </div>
 </header>

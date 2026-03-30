@@ -257,6 +257,13 @@ if (!function_exists('content_link')) {
     }
 }
 
+if (!function_exists('opens_in_new_tab')) {
+    function opens_in_new_tab(?string $value): bool
+    {
+        return preg_match('/^https?:\/\//i', trim((string) $value)) === 1;
+    }
+}
+
 if (!function_exists('plugin_slot')) {
     function plugin_slot(string $pageKey, string $slot, array $context = []): string
     {

@@ -440,7 +440,7 @@ return [
                         'name' => 'intro',
                         'type' => 'textarea',
                         'label' => 'Wprowadzenie',
-                        'default' => 'Zdjęcia budują klimat wyjazdu: bliskość natury, uważność i tempo, w którym można naprawdę odetchnąć. W panelu możesz je później podmienić na własne fotografie z poprzednich edycji.',
+                        'default' => 'Te zdjęcia pokazują atmosferę wyjazdu: bliskość natury, kobiece wsparcie i spokojne tempo, w którym naprawdę można się zatrzymać, odetchnąć i pobyć bliżej siebie.',
                     ],
                     [
                         'name' => 'gallery_title',

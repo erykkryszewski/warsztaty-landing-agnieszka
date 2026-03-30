@@ -7,6 +7,7 @@ $isHome = ($page['key'] ?? '') === 'home';
 $reservation = $isHome ? page_group($page, 'reservation') : [];
 $footerCtaLabel = trim((string) ($reservation['button_label'] ?? ''));
 $footerCtaUrl = content_link($reservation['button_url'] ?? '', '/');
+$footerCtaExternal = opens_in_new_tab($reservation['button_url'] ?? '');
 ?>
 <footer class="site-footer">
     <div class="container site-footer__inner">
@@ -38,7 +39,7 @@ $footerCtaUrl = content_link($reservation['button_url'] ?? '', '/');
 
         <div class="site-footer__actions">
             <?php if ($isHome && $footerCtaLabel !== ''): ?>
-                <a class="button button--secondary" href="<?= e($footerCtaUrl) ?>"><?= e($footerCtaLabel) ?></a>
+                <a class="button button--secondary" href="<?= e($footerCtaUrl) ?>"<?= $footerCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>><?= e($footerCtaLabel) ?></a>
             <?php endif; ?>
             <a class="site-footer__link" href="<?= e(url('polityka-prywatnosci/')) ?>">Polityka prywatności</a>
         </div>

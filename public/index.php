@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Deployment\DeploymentSynchronizer;
 use App\Deployment\WebInstaller;
 use App\Core\Request;
 
@@ -16,6 +17,8 @@ if ($installer->shouldHandleRequest()) {
 
     return;
 }
+
+(new DeploymentSynchronizer(BASE_PATH))->runIfNeeded();
 
 $app = require BASE_PATH . '/bootstrap/app.php';
 

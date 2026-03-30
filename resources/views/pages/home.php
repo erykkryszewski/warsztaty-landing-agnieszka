@@ -24,6 +24,24 @@ $reservationEmail = trim((string) ($business['email'] ?? ''));
 $galleryItems = array_values(array_filter($proof['gallery_items'] ?? [], static fn (array $item): bool => trim((string) ($item['image'] ?? '')) !== ''));
 $videoItems = array_values(array_filter($proof['videos'] ?? [], static fn (array $item): bool => trim((string) ($item['url'] ?? '')) !== ''));
 $quoteItems = array_values(array_filter($proof['quotes'] ?? [], static fn (array $item): bool => trim((string) ($item['quote'] ?? '')) !== ''));
+
+$galleryDisplayItems = [];
+$primaryCtaExternal = opens_in_new_tab($hero['primary_cta_url'] ?? '');
+$secondaryCtaExternal = opens_in_new_tab($hero['secondary_cta_url'] ?? '');
+$pricingCtaExternal = opens_in_new_tab($pricing['cta_url'] ?? '');
+$reservationCtaExternal = opens_in_new_tab($reservation['button_url'] ?? '');
+$finalCtaExternal = opens_in_new_tab($final['button_url'] ?? '');
+
+if ($galleryItems !== []) {
+    foreach (array_slice($galleryItems, 0, 6) as $item) {
+        $imagePath = (string) ($item['image'] ?? '');
+        $galleryDisplayItems[] = [
+            'item' => $item,
+            'image' => content_image($imagePath),
+            'size' => content_image_dimensions($imagePath, 900, 1200),
+        ];
+    }
+}
 ?>
 <main id="main-content" class="landing">
     <section class="landing-hero">
@@ -41,13 +59,13 @@ $quoteItems = array_values(array_filter($proof['quotes'] ?? [], static fn (array
 
                 <div class="landing-hero__actions">
                     <?php if (!empty($hero['primary_cta_label'])): ?>
-                        <a class="button" href="<?= e(content_link($hero['primary_cta_url'] ?? '', '#rezerwacja')) ?>">
+                        <a class="button" href="<?= e(content_link($hero['primary_cta_url'] ?? '', '#rezerwacja')) ?>"<?= $primaryCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
                             <?= e($hero['primary_cta_label']) ?>
                         </a>
                     <?php endif; ?>
 
                     <?php if (!empty($hero['secondary_cta_label'])): ?>
-                        <a class="button button--outline" href="<?= e(content_link($hero['secondary_cta_url'] ?? '', '#co-zawiera')) ?>">
+                        <a class="button button--outline" href="<?= e(content_link($hero['secondary_cta_url'] ?? '', '#co-zawiera')) ?>"<?= $secondaryCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
                             <?= e($hero['secondary_cta_label']) ?>
                         </a>
                     <?php endif; ?>
@@ -312,10 +330,11 @@ $quoteItems = array_values(array_filter($proof['quotes'] ?? [], static fn (array
                 <div class="landing-proof__group">
                     <h3 class="landing-proof__title" data-reveal><?= e($proof['gallery_title'] ?? '') ?></h3>
                     <div class="landing-masonry">
-                        <?php foreach ($galleryItems as $index => $item): ?>
+                        <?php foreach ($galleryDisplayItems as $index => $entry): ?>
                             <?php
-                            $image = content_image($item['image'] ?? '');
-                            $imageSize = content_image_dimensions($item['image'] ?? '', 900, 1200);
+                            $item = $entry['item'];
+                            $image = $entry['image'];
+                            $imageSize = $entry['size'];
                             ?>
                             <figure class="landing-masonry__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
                                 <img
@@ -408,7 +427,7 @@ $quoteItems = array_values(array_filter($proof['quotes'] ?? [], static fn (array
                 </div>
 
                 <?php if (!empty($pricing['cta_label'])): ?>
-                    <a class="button landing-pricing__button" href="<?= e(content_link($pricing['cta_url'] ?? '', '#rezerwacja')) ?>">
+                    <a class="button landing-pricing__button" href="<?= e(content_link($pricing['cta_url'] ?? '', '#rezerwacja')) ?>"<?= $pricingCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
                         <?= e($pricing['cta_label']) ?>
                     </a>
                 <?php endif; ?>
@@ -426,7 +445,7 @@ $quoteItems = array_values(array_filter($proof['quotes'] ?? [], static fn (array
 
                 <div class="landing-reservation__actions">
                     <?php if (!empty($reservation['button_label'])): ?>
-                        <a class="button" href="<?= e(content_link($reservation['button_url'] ?? '', '#')) ?>">
+                        <a class="button" href="<?= e(content_link($reservation['button_url'] ?? '', '#')) ?>"<?= $reservationCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
                             <?= e($reservation['button_label']) ?>
                         </a>
                     <?php endif; ?>
@@ -454,7 +473,7 @@ $quoteItems = array_values(array_filter($proof['quotes'] ?? [], static fn (array
                 </div>
 
                 <?php if (!empty($final['button_label'])): ?>
-                    <a class="button button--white" href="<?= e(content_link($final['button_url'] ?? '', '#rezerwacja')) ?>">
+                    <a class="button button--white" href="<?= e(content_link($final['button_url'] ?? '', '#rezerwacja')) ?>"<?= $finalCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
                         <?= e($final['button_label']) ?>
                     </a>
                 <?php endif; ?>
@@ -464,7 +483,7 @@ $quoteItems = array_values(array_filter($proof['quotes'] ?? [], static fn (array
 
     <?php if (!empty($hero['primary_cta_label'])): ?>
         <div class="sticky-cta">
-            <a class="button sticky-cta__button" href="<?= e(content_link($hero['primary_cta_url'] ?? '', '#rezerwacja')) ?>">
+            <a class="button sticky-cta__button" href="<?= e(content_link($hero['primary_cta_url'] ?? '', '#rezerwacja')) ?>"<?= $primaryCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
                 <?= e($hero['primary_cta_label']) ?>
             </a>
         </div>
