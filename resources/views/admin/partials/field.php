@@ -8,6 +8,7 @@ $removePrefix = $removePrefix ?? '';
 $removeInputName = $removePrefix !== '' ? field_name($removePrefix, $fieldName) : '';
 $errorKey = field_error_key($errorPrefix, $fieldName);
 $fieldValue = $value ?? '';
+$fieldValueString = string_value($fieldValue);
 ?>
 <div class="admin-field admin-field--<?= e($fieldType) ?>">
     <label class="admin-field__label" for="<?= e(str_replace(['[', ']'], '_', $inputName)) ?>"><?= e($label) ?></label>
@@ -17,22 +18,22 @@ $fieldValue = $value ?? '';
             id="<?= e(str_replace(['[', ']'], '_', $inputName)) ?>"
             type="<?= ($fieldType === 'phone' || $fieldType === 'url') ? 'text' : e($fieldType) ?>"
             name="<?= e($inputName) ?>"
-            value="<?= e((string) $fieldValue) ?>"
+            value="<?= e($fieldValueString) ?>"
         >
     <?php elseif ($fieldType === 'textarea' || $fieldType === 'richtext'): ?>
         <textarea
             id="<?= e(str_replace(['[', ']'], '_', $inputName)) ?>"
             name="<?= e($inputName) ?>"
             rows="<?= $fieldType === 'richtext' ? '8' : '4' ?>"
-        ><?= e((string) $fieldValue) ?></textarea>
+        ><?= e($fieldValueString) ?></textarea>
     <?php elseif ($fieldType === 'image'): ?>
         <div class="admin-media-field" data-media-field>
             <?php if ($removeInputName !== ''): ?>
                 <input type="hidden" name="<?= e($removeInputName) ?>" value="0" data-media-remove-input>
             <?php endif; ?>
 
-            <?php if (is_string($fieldValue) && $fieldValue !== ''): ?>
-                <?php $previewUrl = str_starts_with($fieldValue, 'http') ? $fieldValue : asset(ltrim($fieldValue, '/')); ?>
+            <?php if ($fieldValueString !== ''): ?>
+                <?php $previewUrl = str_starts_with($fieldValueString, 'http') ? $fieldValueString : asset(ltrim($fieldValueString, '/')); ?>
                 <div class="admin-media-card" data-media-card>
                     <img src="<?= e($previewUrl) ?>" alt="<?= e($label) ?>">
                     <?php if ($removeInputName !== ''): ?>

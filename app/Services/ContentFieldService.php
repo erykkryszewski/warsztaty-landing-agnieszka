@@ -37,6 +37,43 @@ class ContentFieldService
         return $values;
     }
 
+    public function normalizeGroups(array $groups, array $input): array
+    {
+        $content = [];
+
+        foreach ($groups as $group) {
+            $groupKey = (string) ($group['key'] ?? '');
+
+            if ($groupKey === '') {
+                continue;
+            }
+
+            $content[$groupKey] = $this->normalizeFields(
+                is_array($group['fields'] ?? null) ? $group['fields'] : [],
+                is_array($input[$groupKey] ?? null) ? $input[$groupKey] : []
+            );
+        }
+
+        return $content;
+    }
+
+    public function normalizeFields(array $fields, array $input): array
+    {
+        $values = [];
+
+        foreach ($fields as $field) {
+            $name = (string) ($field['name'] ?? '');
+
+            if ($name === '') {
+                continue;
+            }
+
+            $values[$name] = $this->normalizeFieldValue($field, $input[$name] ?? null);
+        }
+
+        return $values;
+    }
+
     public function fillGroups(
         array $groups,
         array $input,
@@ -168,6 +205,26 @@ class ContentFieldService
         }
 
         return $field['type'] === 'repeater' ? [] : '';
+    }
+
+    private function normalizeFieldValue(array $field, mixed $value): mixed
+    {
+        if (($field['type'] ?? '') === 'repeater') {
+            return $this->normalizeRepeaterValue($field, $value);
+        }
+
+        if ($value === null) {
+            return $this->defaultValue($field);
+        }
+
+        $scalar = $this->flattenScalarValue($value, (string) ($field['name'] ?? ''));
+
+        return match ($field['type'] ?? '') {
+            'richtext' => $this->sanitizeRichText(trim($scalar)),
+            'textarea' => $scalar,
+            'image', 'text', 'email', 'url', 'phone' => trim($scalar),
+            default => trim($scalar),
+        };
     }
 
     private function normalizeValue(array $field, mixed $value, mixed $currentValue): mixed
@@ -312,5 +369,67 @@ class ContentFieldService
         }
 
         return sprintf('<%1$s%2$s>%3$s</%1$s>', $tag, $attributes, $children);
+    }
+
+    private function normalizeRepeaterValue(array $field, mixed $value): array
+    {
+        if (!is_array($value)) {
+            return is_array($this->defaultValue($field)) ? $this->defaultValue($field) : [];
+        }
+
+        $childFields = is_array($field['fields'] ?? null) ? $field['fields'] : [];
+        $childNames = array_values(array_filter(array_map(
+            static fn (array $childField): string => (string) ($childField['name'] ?? ''),
+            $childFields
+        )));
+
+        $rows = $this->looksLikeRepeaterRow($value, $childNames) ? [$value] : array_values($value);
+        $normalized = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                $row = count($childNames) === 1 ? [$childNames[0] => $row] : [];
+            }
+
+            $normalized[] = $this->normalizeFields($childFields, $row);
+        }
+
+        return $normalized;
+    }
+
+    private function looksLikeRepeaterRow(array $value, array $childNames): bool
+    {
+        if ($value === [] || $childNames === [] || array_is_list($value)) {
+            return false;
+        }
+
+        foreach ($childNames as $childName) {
+            if (array_key_exists($childName, $value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function flattenScalarValue(mixed $value, string $fieldName): string
+    {
+        if (!is_array($value)) {
+            return is_scalar($value) ? (string) $value : '';
+        }
+
+        if ($fieldName !== '' && array_key_exists($fieldName, $value)) {
+            return $this->flattenScalarValue($value[$fieldName], $fieldName);
+        }
+
+        if ($value === []) {
+            return '';
+        }
+
+        if (array_is_list($value)) {
+            return $this->flattenScalarValue($value[0], $fieldName);
+        }
+
+        return $this->flattenScalarValue(reset($value), $fieldName);
     }
 }

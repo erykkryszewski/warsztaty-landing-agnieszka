@@ -6,6 +6,8 @@ namespace App\Deployment;
 
 use App\Database\MigrationRunner;
 use App\Database\SeedRunner;
+use App\Services\PageService;
+use App\Services\SettingsService;
 use PDO;
 use RuntimeException;
 use Throwable;
@@ -108,9 +110,11 @@ class WebInstaller
         $app = require $this->basePath . '/bootstrap/app.php';
         (new MigrationRunner())->run($app);
         (new SeedRunner())->run($app);
+        $app->make(SettingsService::class)->repairStoredContent();
+        $app->make(PageService::class)->repairStoredContent();
 
         $this->writeInstallLock();
-        $this->writeDeployedLock((string) ($config['generated_at'] ?? ''));
+        $this->writeDeployedLock($config);
     }
 
     private function connectToServer(string $host, int $port, string $user, string $password, string $charset): PDO
@@ -189,8 +193,10 @@ class WebInstaller
         }
     }
 
-    private function writeDeployedLock(string $generatedAt): void
+    private function writeDeployedLock(array $deployment): void
     {
+        $generatedAt = trim((string) ($deployment['generated_at'] ?? ''));
+
         if ($generatedAt === '') {
             return;
         }
@@ -198,6 +204,8 @@ class WebInstaller
         $path = $this->basePath . '/storage/app/deployed.lock';
         $contents = json_encode([
             'generated_at' => $generatedAt,
+            'package_hash' => (string) ($deployment['package_hash'] ?? ''),
+            'snapshot_hash' => (string) ($deployment['snapshot_hash'] ?? ''),
             'synced_at' => date(DATE_ATOM),
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
@@ -349,7 +357,7 @@ class WebInstaller
             </label>
             <button type="submit">Zainstaluj stronę</button>
         </form>
-        <p class="meta">Po zakończeniu instalator wyłączy się automatycznie, a `/admin/` zacznie działać normalnie.</p>
+        <p class="meta">Po zakończeniu instalator wyłączy się automatycznie. Każda kolejna wrzutka nowej paczki deploy zsynchronizuje bazę przy pierwszym wejściu na stronę.</p>
     </main>
 </body>
 </html>
@@ -358,34 +366,30 @@ HTML;
 
     private function deploymentConfig(): array
     {
-        /** @var array $config */
-        $config = require $this->basePath . '/storage/app/deployment.php';
-
-        return $config;
+        return $this->readPayload(
+            $this->basePath . '/storage/app/deployment.json',
+            $this->basePath . '/storage/app/deployment.php',
+            'Brakuje konfiguracji deploy w paczce.'
+        );
     }
 
     private function snapshot(): array
     {
-        $path = $this->basePath . '/database/deploy-snapshot.php';
-
-        if (!is_file($path)) {
-            throw new RuntimeException('Brakuje snapshotu bazy w paczce deploy.');
-        }
-
-        /** @var array $snapshot */
-        $snapshot = require $path;
-
-        return $snapshot;
+        return $this->readPayload(
+            $this->basePath . '/database/deploy-snapshot.json',
+            $this->basePath . '/database/deploy-snapshot.php',
+            'Brakuje snapshotu bazy w paczce deploy.'
+        );
     }
 
     private function isDeployPackage(): bool
     {
-        return is_file($this->basePath . '/storage/app/deployment.php');
+        return $this->hasDeploymentMetadata() && $this->hasSnapshot();
     }
 
     private function isInstalled(): bool
     {
-        return is_file($this->basePath . '/storage/app/install.lock') && is_file($this->basePath . '/.env');
+        return is_file($this->basePath . '/.env');
     }
 
     private function detectedAppUrl(): string
@@ -403,5 +407,43 @@ HTML;
         }
 
         return rtrim($scheme . '://' . $host . $basePath, '/');
+    }
+
+    private function hasDeploymentMetadata(): bool
+    {
+        return is_file($this->basePath . '/storage/app/deployment.json')
+            || is_file($this->basePath . '/storage/app/deployment.php');
+    }
+
+    private function hasSnapshot(): bool
+    {
+        return is_file($this->basePath . '/database/deploy-snapshot.json')
+            || is_file($this->basePath . '/database/deploy-snapshot.php');
+    }
+
+    private function readPayload(string $jsonPath, string $phpPath, string $missingMessage): array
+    {
+        if (is_file($jsonPath)) {
+            $decoded = json_decode((string) file_get_contents($jsonPath), true);
+
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+
+            throw new RuntimeException(sprintf('Nieprawidłowy plik JSON [%s].', basename($jsonPath)));
+        }
+
+        if (is_file($phpPath)) {
+            /** @var mixed $payload */
+            $payload = require $phpPath;
+
+            if (is_array($payload)) {
+                return $payload;
+            }
+
+            throw new RuntimeException(sprintf('Nieprawidłowy plik PHP [%s].', basename($phpPath)));
+        }
+
+        throw new RuntimeException($missingMessage);
     }
 }

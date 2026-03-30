@@ -81,4 +81,11 @@ Creates a ready-to-upload `deploy/` directory in the project root. Upload its co
 - enter MySQL host, port, database name, user, and password
 - installer writes `.env`, restores the packaged database snapshot, runs pending migrations/seeds, and redirects to the live site
 
+Every next package generated with `php deploy-package` also contains a fresh database snapshot plus deploy metadata. After uploading the new package over the existing production files, the first request automatically syncs the production database to the packaged state.
+
+Important:
+- upload the whole `deploy/` contents, including `database/` and `storage/app/`
+- do not skip `deployment.json` / `deploy-snapshot.json`
+- sync activity is logged to `storage/logs/deploy-sync.log`
+
 The generated package includes `vendor`, built assets, uploads, and the current database content snapshot.

@@ -30,9 +30,13 @@ class SettingsService
         $sections = [];
 
         foreach ($this->registry->all() as $section) {
-            $payload = $this->decode($stored[$section['key']]['content_json'] ?? null);
+            $defaults = $this->fields->defaultsFromFields($section['fields']);
+            $payload = $this->fields->normalizeFields(
+                $section['fields'],
+                $this->decode($stored[$section['key']]['content_json'] ?? null)
+            );
             $sections[] = array_merge($section, [
-                'content' => $this->mergeDefaults($section['fields'], $payload),
+                'content' => $this->mergeDefaults($section['fields'], $this->repairArrayStrings($payload, $defaults)),
             ]);
         }
 
@@ -81,18 +85,91 @@ class SettingsService
         }
 
         foreach ($sections as $section) {
-            $this->settings->upsert($section['key'], json_encode($result['data'][$section['key']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+            $defaults = $this->fields->defaultsFromFields($section['fields']);
+            $normalized = $this->repairArrayStrings(
+                $this->fields->normalizeFields(
+                    $section['fields'],
+                    is_array($result['data'][$section['key']] ?? null) ? $result['data'][$section['key']] : []
+                ),
+                $defaults
+            );
+            $this->settings->upsert($section['key'], json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         }
 
         $this->sectionsCache = null;
         $this->valuesCache = null;
 
-        return $result;
+        return [
+            'data' => $this->values(),
+            'errors' => [],
+        ];
+    }
+
+    public function repairStoredContent(): void
+    {
+        $existing = $this->settings->allIndexed();
+
+        foreach ($this->registry->all() as $section) {
+            $sectionKey = (string) ($section['key'] ?? '');
+
+            if ($sectionKey === '') {
+                continue;
+            }
+
+            $row = $existing[$sectionKey] ?? null;
+
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $decoded = $this->decode($row['content_json'] ?? null);
+            $defaults = $this->fields->defaultsFromFields($section['fields']);
+            $normalized = $this->repairArrayStrings(
+                $this->fields->normalizeFields($section['fields'], $decoded),
+                $defaults
+            );
+            $encoded = json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+            if (!is_string($encoded) || $encoded === (string) ($row['content_json'] ?? '')) {
+                continue;
+            }
+
+            $this->settings->upsert($sectionKey, $encoded);
+        }
+
+        $this->sectionsCache = null;
+        $this->valuesCache = null;
     }
 
     private function mergeDefaults(array $fields, array $payload): array
     {
         return array_replace($this->fields->defaultsFromFields($fields), $payload);
+    }
+
+    private function repairArrayStrings(mixed $value, mixed $defaults): mixed
+    {
+        if (is_array($value)) {
+            $repaired = [];
+
+            foreach ($value as $key => $item) {
+                $repaired[$key] = $this->repairArrayStrings(
+                    $item,
+                    is_array($defaults) ? ($defaults[$key] ?? null) : null
+                );
+            }
+
+            return $repaired;
+        }
+
+        if (is_string($value) && trim($value) === 'Array') {
+            if (is_scalar($defaults)) {
+                return (string) $defaults;
+            }
+
+            return '';
+        }
+
+        return $value;
     }
 
     private function decode(?string $json): array

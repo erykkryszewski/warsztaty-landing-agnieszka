@@ -18,7 +18,15 @@
       "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT content_json FROM settings WHERE section_key=''business'';\")",
       "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT content_json FROM pages WHERE page_key=''home'';\")",
       "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT title, external_url FROM blog_posts;\")",
-      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT content_json FROM settings WHERE section_key=''social_links'';\")"
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root ercoding_cms -e \"SELECT content_json FROM settings WHERE section_key=''social_links'';\")",
+      "Bash(php deploy-package:*)",
+      "Bash(tr '}' '\\\\n')",
+      "Bash(php -r \":*)",
+      "Bash(tr '{' '\\\\n{')",
+      "Bash(tr '}' '}\\\\n')",
+      "Bash(curl -s http://localhost/warsztaty-landing/)",
+      "Bash(curl -s http://localhost/)",
+      "Bash(python -c \":*)"
     ]
   }
 }

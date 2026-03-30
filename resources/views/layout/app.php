@@ -49,6 +49,7 @@ $fontsQuery = urlencode($fontPrimary) . ':wght@400;500;600;700&family=' . urlenc
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=<?= $fontsQuery ?>&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="<?= e(asset('assets/build/css/site.css')) ?>">
     <style>
         :root {

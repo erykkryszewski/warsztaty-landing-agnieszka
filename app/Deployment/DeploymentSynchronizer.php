@@ -7,8 +7,11 @@ namespace App\Deployment;
 use App\Core\Env;
 use App\Database\MigrationRunner;
 use App\Database\SeedRunner;
+use App\Services\PageService;
+use App\Services\SettingsService;
 use PDO;
 use RuntimeException;
+use Throwable;
 
 class DeploymentSynchronizer
 {
@@ -25,22 +28,45 @@ class DeploymentSynchronizer
         $deployment = $this->deploymentConfig();
         $generatedAt = (string) ($deployment['generated_at'] ?? '');
 
-        if ($generatedAt === '' || !$this->needsSync($generatedAt)) {
+        if ($generatedAt === '' || !$this->needsSync($deployment)) {
             return;
         }
 
-        Env::load($this->basePath . '/.env');
+        $packageId = $this->deploymentIdentifier($deployment);
 
-        $pdo = $this->connectToDatabase();
-        $snapshot = $this->snapshot();
+        try {
+            $this->log('START', [
+                'package' => $packageId,
+                'generated_at' => $generatedAt,
+            ]);
 
-        (new SnapshotRestorer())->restore($pdo, $snapshot);
+            Env::load($this->basePath . '/.env');
 
-        $app = require $this->basePath . '/bootstrap/app.php';
-        (new MigrationRunner())->run($app);
-        (new SeedRunner())->run($app);
+            $pdo = $this->connectToDatabase();
+            $snapshot = $this->snapshot();
 
-        $this->writeDeployedLock($generatedAt);
+            (new SnapshotRestorer())->restore($pdo, $snapshot);
+
+            $app = require $this->basePath . '/bootstrap/app.php';
+            (new MigrationRunner())->run($app);
+            (new SeedRunner())->run($app);
+            $app->make(SettingsService::class)->repairStoredContent();
+            $app->make(PageService::class)->repairStoredContent();
+
+            $this->writeDeployedLock($deployment);
+            $this->log('DONE', [
+                'package' => $packageId,
+                'generated_at' => $generatedAt,
+            ]);
+        } catch (Throwable $exception) {
+            $this->log('ERROR', [
+                'package' => $packageId,
+                'generated_at' => $generatedAt,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
     }
 
     private function connectToDatabase(): PDO
@@ -70,39 +96,50 @@ class DeploymentSynchronizer
 
     private function deploymentConfig(): array
     {
-        /** @var array $config */
-        $config = require $this->basePath . '/storage/app/deployment.php';
-
-        return $config;
+        return $this->readPayload(
+            $this->basePath . '/storage/app/deployment.json',
+            $this->basePath . '/storage/app/deployment.php',
+            'Missing deployment metadata.'
+        );
     }
 
     private function snapshot(): array
     {
-        /** @var array $snapshot */
-        $snapshot = require $this->basePath . '/database/deploy-snapshot.php';
-
-        return $snapshot;
+        return $this->readPayload(
+            $this->basePath . '/database/deploy-snapshot.json',
+            $this->basePath . '/database/deploy-snapshot.php',
+            'Missing deployment snapshot.'
+        );
     }
 
-    private function needsSync(string $generatedAt): bool
+    private function needsSync(array $deployment): bool
     {
         $lockPath = $this->basePath . '/storage/app/deployed.lock';
+        $packageHash = trim((string) ($deployment['package_hash'] ?? ''));
+        $generatedAt = trim((string) ($deployment['generated_at'] ?? ''));
 
         if (!is_file($lockPath)) {
             return true;
         }
 
         $state = json_decode((string) file_get_contents($lockPath), true);
-        $appliedAt = is_array($state) ? (string) ($state['generated_at'] ?? '') : '';
+        $appliedHash = is_array($state) ? trim((string) ($state['package_hash'] ?? '')) : '';
+        $appliedAt = is_array($state) ? trim((string) ($state['generated_at'] ?? '')) : '';
+
+        if ($packageHash !== '') {
+            return $appliedHash !== $packageHash;
+        }
 
         return $appliedAt !== $generatedAt;
     }
 
-    private function writeDeployedLock(string $generatedAt): void
+    private function writeDeployedLock(array $deployment): void
     {
         $path = $this->basePath . '/storage/app/deployed.lock';
         $contents = json_encode([
-            'generated_at' => $generatedAt,
+            'generated_at' => (string) ($deployment['generated_at'] ?? ''),
+            'package_hash' => (string) ($deployment['package_hash'] ?? ''),
+            'snapshot_hash' => (string) ($deployment['snapshot_hash'] ?? ''),
             'synced_at' => date(DATE_ATOM),
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
@@ -111,11 +148,88 @@ class DeploymentSynchronizer
 
     private function isDeployPackage(): bool
     {
-        return is_file($this->basePath . '/storage/app/deployment.php') && is_file($this->basePath . '/database/deploy-snapshot.php');
+        return $this->hasDeploymentMetadata() && $this->hasSnapshot();
     }
 
     private function isInstalled(): bool
     {
-        return is_file($this->basePath . '/storage/app/install.lock') && is_file($this->basePath . '/.env');
+        return is_file($this->basePath . '/.env');
+    }
+
+    private function hasDeploymentMetadata(): bool
+    {
+        return is_file($this->basePath . '/storage/app/deployment.json')
+            || is_file($this->basePath . '/storage/app/deployment.php');
+    }
+
+    private function hasSnapshot(): bool
+    {
+        return is_file($this->basePath . '/database/deploy-snapshot.json')
+            || is_file($this->basePath . '/database/deploy-snapshot.php');
+    }
+
+    private function readPayload(string $jsonPath, string $phpPath, string $missingMessage): array
+    {
+        if (is_file($jsonPath)) {
+            $decoded = json_decode((string) file_get_contents($jsonPath), true);
+
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+
+            throw new RuntimeException(sprintf('Invalid JSON payload [%s].', $jsonPath));
+        }
+
+        if (is_file($phpPath)) {
+            /** @var mixed $payload */
+            $payload = require $phpPath;
+
+            if (is_array($payload)) {
+                return $payload;
+            }
+
+            throw new RuntimeException(sprintf('Invalid PHP payload [%s].', $phpPath));
+        }
+
+        throw new RuntimeException($missingMessage);
+    }
+
+    private function deploymentIdentifier(array $deployment): string
+    {
+        $packageHash = trim((string) ($deployment['package_hash'] ?? ''));
+
+        if ($packageHash !== '') {
+            return $packageHash;
+        }
+
+        return trim((string) ($deployment['generated_at'] ?? '')) ?: 'unknown';
+    }
+
+    private function log(string $status, array $context = []): void
+    {
+        $directory = $this->basePath . '/storage/logs';
+
+        if (!is_dir($directory) && !mkdir($concurrentDirectory = $directory, 0777, true) && !is_dir($concurrentDirectory)) {
+            return;
+        }
+
+        $parts = [];
+
+        foreach ($context as $key => $value) {
+            if ($value === '') {
+                continue;
+            }
+
+            $parts[] = $key . '=' . str_replace(["\r", "\n"], ' ', (string) $value);
+        }
+
+        $line = sprintf(
+            "[%s] %s%s",
+            date(DATE_ATOM),
+            $status,
+            $parts === [] ? '' : ' ' . implode(' ', $parts)
+        );
+
+        file_put_contents($directory . '/deploy-sync.log', $line . PHP_EOL, FILE_APPEND);
     }
 }

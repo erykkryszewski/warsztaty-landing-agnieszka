@@ -50,9 +50,32 @@ if (!function_exists('session')) {
 }
 
 if (!function_exists('e')) {
+    function string_value(mixed $value): string
+    {
+        if (!is_array($value)) {
+            return is_scalar($value) ? (string) $value : '';
+        }
+
+        if ($value === []) {
+            return '';
+        }
+
+        foreach (['text', 'title', 'quote', 'author', 'label', 'url', 'name', 'body', 'lead', 'role', 'alt'] as $preferredKey) {
+            if (array_key_exists($preferredKey, $value)) {
+                return string_value($value[$preferredKey]);
+            }
+        }
+
+        if (array_is_list($value)) {
+            return string_value($value[0] ?? '');
+        }
+
+        return string_value(reset($value));
+    }
+
     function e(mixed $value): string
     {
-        return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+        return htmlspecialchars(string_value($value), ENT_QUOTES, 'UTF-8');
     }
 }
 
@@ -69,14 +92,18 @@ if (!function_exists('url')) {
 if (!function_exists('asset')) {
     function asset(string $path): string
     {
-        return url(ltrim($path, '/'));
+        $clean = ltrim($path, '/');
+        $filePath = BASE_PATH . '/public/' . $clean;
+        $version = is_file($filePath) ? filemtime($filePath) : '';
+
+        return url($clean) . ($version !== '' ? '?v=' . $version : '');
     }
 }
 
 if (!function_exists('content_image')) {
-    function content_image(?string $value): string
+    function content_image(mixed $value): string
     {
-        $candidate = trim((string) $value);
+        $candidate = trim(string_value($value));
 
         if ($candidate === '') {
             return '';
@@ -91,9 +118,9 @@ if (!function_exists('content_image')) {
 }
 
 if (!function_exists('content_image_dimensions')) {
-    function content_image_dimensions(?string $value, int $fallbackWidth = 1600, int $fallbackHeight = 900): array
+    function content_image_dimensions(mixed $value, int $fallbackWidth = 1600, int $fallbackHeight = 900): array
     {
-        $candidate = trim((string) $value);
+        $candidate = trim(string_value($value));
 
         if ($candidate === '' || str_starts_with($candidate, 'http')) {
             return ['width' => $fallbackWidth, 'height' => $fallbackHeight];
@@ -198,9 +225,11 @@ if (!function_exists('is_active_path')) {
 }
 
 if (!function_exists('nl2p')) {
-    function nl2p(?string $text): string
+    function nl2p(mixed $text): string
     {
-        if ($text === null || trim($text) === '') {
+        $text = string_value($text);
+
+        if ($text === '' || trim($text) === '') {
             return '';
         }
 
@@ -233,9 +262,9 @@ if (!function_exists('field_error_key')) {
 }
 
 if (!function_exists('content_link')) {
-    function content_link(?string $value, string $fallback = ''): string
+    function content_link(mixed $value, string $fallback = ''): string
     {
-        $candidate = trim((string) $value);
+        $candidate = trim(string_value($value));
 
         if ($candidate === '') {
             $candidate = trim($fallback);
@@ -258,9 +287,9 @@ if (!function_exists('content_link')) {
 }
 
 if (!function_exists('opens_in_new_tab')) {
-    function opens_in_new_tab(?string $value): bool
+    function opens_in_new_tab(mixed $value): bool
     {
-        return preg_match('/^https?:\/\//i', trim((string) $value)) === 1;
+        return preg_match('/^https?:\/\//i', trim(string_value($value))) === 1;
     }
 }
 

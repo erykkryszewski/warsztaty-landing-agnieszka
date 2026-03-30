@@ -52,14 +52,14 @@ return [
                 'type' => 'text',
                 'label' => 'Font główny (body)',
                 'help' => 'Nazwa fontu z Google Fonts, np. Manrope, Inter, Open Sans.',
-                'default' => 'Manrope',
+                'default' => 'DM Sans',
             ],
             [
                 'name' => 'font_decorated',
                 'type' => 'text',
                 'label' => 'Font nagłówków',
                 'help' => 'Nazwa fontu z Google Fonts, np. DM Serif Display, Cormorant Garamond, Fraunces.',
-                'default' => 'Cormorant Garamond',
+                'default' => 'Playfair Display',
             ],
             [
                 'name' => 'color_main',

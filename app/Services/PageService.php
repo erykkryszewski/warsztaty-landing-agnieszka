@@ -105,6 +105,12 @@ class PageService
             return $result;
         }
 
+        $defaults = $this->fields->defaultsFromGroups($page['groups']);
+        $normalizedData = $this->repairArrayStrings(
+            $this->fields->normalizeGroups($page['groups'], $result['data']),
+            $defaults
+        );
+
         $metaImage = $page['meta_image'];
         $metaFiles = is_array($files['seo'] ?? null) ? $files['seo'] : [];
         $removeMetaImage = in_array((string) ($meta['meta_image_remove'] ?? ''), ['1', 'true', 'on', 'yes'], true);
@@ -122,7 +128,7 @@ class PageService
             }
         }
 
-        $this->pages->upsert($pageKey, json_encode($result['data'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), [
+        $this->pages->upsert($pageKey, json_encode($normalizedData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), [
             'meta_title' => trim((string) ($meta['meta_title'] ?? '')),
             'meta_description' => trim((string) ($meta['meta_description'] ?? '')),
             'meta_image' => $metaImage,
@@ -132,13 +138,55 @@ class PageService
         $this->pageCache = [];
         $this->navigationCache = null;
 
-        return $result;
+        return ['data' => $normalizedData, 'errors' => []];
+    }
+
+    public function repairStoredContent(): void
+    {
+        foreach ($this->registry->all() as $definition) {
+            $pageKey = (string) ($definition['key'] ?? '');
+
+            if ($pageKey === '') {
+                continue;
+            }
+
+            $row = $this->pages->findByKey($pageKey);
+
+            if ($row === null) {
+                continue;
+            }
+
+            $decoded = $this->decode($row['content_json'] ?? null);
+            $defaults = $this->fields->defaultsFromGroups($definition['groups']);
+            $normalized = $this->repairArrayStrings(
+                $this->fields->normalizeGroups($definition['groups'], $decoded),
+                $defaults
+            );
+            $encoded = json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+            if (!is_string($encoded) || $encoded === (string) ($row['content_json'] ?? '')) {
+                continue;
+            }
+
+            $this->pages->upsert($pageKey, $encoded, [
+                'meta_title' => $row['meta_title'] ?? '',
+                'meta_description' => $row['meta_description'] ?? '',
+                'meta_image' => $row['meta_image'] ?? '',
+            ]);
+        }
+
+        $this->allPagesCache = null;
+        $this->pageCache = [];
+        $this->navigationCache = null;
     }
 
     private function shapePage(array $definition, array $row): array
     {
-        $content = $this->decode($row['content_json'] ?? null);
         $defaults = $this->fields->defaultsFromGroups($definition['groups']);
+        $content = $this->repairArrayStrings(
+            $this->fields->normalizeGroups($definition['groups'], $this->decode($row['content_json'] ?? null)),
+            $defaults
+        );
 
         return array_merge($definition, [
             'content' => array_replace_recursive($defaults, $content),
@@ -157,5 +205,31 @@ class PageService
         $decoded = json_decode($json, true);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+    private function repairArrayStrings(mixed $value, mixed $defaults): mixed
+    {
+        if (is_array($value)) {
+            $repaired = [];
+
+            foreach ($value as $key => $item) {
+                $repaired[$key] = $this->repairArrayStrings(
+                    $item,
+                    is_array($defaults) ? ($defaults[$key] ?? null) : null
+                );
+            }
+
+            return $repaired;
+        }
+
+        if (is_string($value) && trim($value) === 'Array') {
+            if (is_scalar($defaults)) {
+                return (string) $defaults;
+            }
+
+            return '';
+        }
+
+        return $value;
     }
 }

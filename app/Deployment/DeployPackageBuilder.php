@@ -21,20 +21,34 @@ class DeployPackageBuilder
         $this->recreateDeployDirectory();
         $this->copyRuntimeFiles();
         $snapshot = $this->createDatabaseSnapshot();
+        $generatedAt = date(DATE_ATOM);
         $installKey = bin2hex(random_bytes(16));
+        $snapshotJson = $this->encodeJson($snapshot);
+        $snapshotHash = hash('sha256', $snapshotJson);
+        $deployment = [
+            'install_key' => $installKey,
+            'generated_at' => $generatedAt,
+            'snapshot_hash' => $snapshotHash,
+            'env_template' => $this->envTemplate(),
+        ];
+        $deployment['package_hash'] = hash('sha256', $this->encodeJson($deployment));
 
         $this->writePhpFile(
             $this->deployPath . '/database/deploy-snapshot.php',
             $snapshot
         );
+        $this->writeJsonFile(
+            $this->deployPath . '/database/deploy-snapshot.json',
+            $snapshotJson
+        );
 
         $this->writePhpFile(
             $this->deployPath . '/storage/app/deployment.php',
-            [
-                'install_key' => $installKey,
-                'generated_at' => date(DATE_ATOM),
-                'env_template' => $this->envTemplate(),
-            ]
+            $deployment
+        );
+        $this->writeJsonFile(
+            $this->deployPath . '/storage/app/deployment.json',
+            $this->encodeJson($deployment)
         );
 
         $this->writeInstructions($installKey);
@@ -43,7 +57,7 @@ class DeployPackageBuilder
         return [
             'path' => $this->deployPath,
             'install_key' => $installKey,
-            'generated_at' => date(DATE_ATOM),
+            'generated_at' => $generatedAt,
         ];
     }
 
@@ -193,11 +207,13 @@ class DeployPackageBuilder
             'DEPLOY PACKAGE',
             '',
             '1. Upload the full contents of this deploy directory to the target FTP document root.',
-            '2. Open the target domain in the browser.',
+            '2. If this is the first deployment, open the target domain in the browser.',
             '3. In the installer, enter:',
             '   - install key: ' . $installKey,
             '   - DB host, port, database, user, password',
             '4. Installer restores the packaged database snapshot and finishes setup automatically.',
+            '5. Every next upload of a freshly generated package auto-syncs the database on the first request.',
+            '6. Deployment sync writes a trace to storage/logs/deploy-sync.log.',
             '',
             'Generated at: ' . date(DATE_ATOM),
         ]) . PHP_EOL;
@@ -223,6 +239,7 @@ class DeployPackageBuilder
         $this->emptyDirectory($this->deployPath . '/storage/cache', ['.gitkeep']);
         $this->emptyDirectory($this->deployPath . '/storage/logs', ['.gitkeep']);
         @unlink($this->deployPath . '/storage/app/install.lock');
+        @unlink($this->deployPath . '/storage/app/deployed.lock');
         @unlink($this->deployPath . '/.env');
     }
 
@@ -239,6 +256,30 @@ class DeployPackageBuilder
         if (file_put_contents($path, $contents) === false) {
             throw new RuntimeException(sprintf('Unable to write [%s].', $path));
         }
+    }
+
+    private function writeJsonFile(string $path, string $payload): void
+    {
+        $directory = dirname($path);
+
+        if (!is_dir($directory) && !mkdir($concurrentDirectory = $directory, 0777, true) && !is_dir($concurrentDirectory)) {
+            throw new RuntimeException(sprintf('Unable to create directory [%s].', $directory));
+        }
+
+        if (file_put_contents($path, $payload . PHP_EOL) === false) {
+            throw new RuntimeException(sprintf('Unable to write [%s].', $path));
+        }
+    }
+
+    private function encodeJson(array $payload): string
+    {
+        $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if (!is_string($json)) {
+            throw new RuntimeException('Unable to encode deployment payload to JSON.');
+        }
+
+        return $json;
     }
 
     private function copyDirectory(string $source, string $target): void

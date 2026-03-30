@@ -116,7 +116,7 @@ if ($galleryItems !== []) {
                 <?php foreach (($audience['items'] ?? []) as $index => $item): ?>
                     <?php if (!empty($item['text'])): ?>
                         <li class="landing-list__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
-                            <span class="landing-list__marker" aria-hidden="true"></span>
+                            <span class="landing-list__icon" aria-hidden="true"><i class="fa-solid fa-heart"></i></span>
                             <span><?= e($item['text']) ?></span>
                         </li>
                     <?php endif; ?>
@@ -141,8 +141,9 @@ if ($galleryItems !== []) {
             <ul class="landing-list">
                 <?php foreach (($retreat['items'] ?? []) as $index => $item): ?>
                     <?php if (!empty($item['text'])): ?>
-                        <li class="landing-list__item landing-list__item--plain" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
-                            <?= e($item['text']) ?>
+                        <li class="landing-list__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
+                            <span class="landing-list__icon" aria-hidden="true"><i class="fa-solid fa-leaf"></i></span>
+                            <span><?= e($item['text']) ?></span>
                         </li>
                     <?php endif; ?>
                 <?php endforeach; ?>
@@ -176,11 +177,25 @@ if ($galleryItems !== []) {
                 <h2 class="landing-section__title"><?= e($benefits['title'] ?? '') ?></h2>
             </div>
 
+            <?php
+            $benefitIcons = [
+                'fa-dove',
+                'fa-heart',
+                'fa-lightbulb',
+                'fa-hand-holding-heart',
+                'fa-list-check',
+                'fa-toolbox',
+                'fa-brain',
+                'fa-people-group',
+                'fa-seedling',
+            ];
+            ?>
             <ul class="landing-list landing-list--columns">
                 <?php foreach (($benefits['items'] ?? []) as $index => $item): ?>
                     <?php if (!empty($item['text'])): ?>
-                        <li class="landing-list__item landing-list__item--pill" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
-                            <?= e($item['text']) ?>
+                        <li class="landing-list__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
+                            <span class="landing-list__icon" aria-hidden="true"><i class="fa-solid <?= e($benefitIcons[$index] ?? 'fa-star') ?>"></i></span>
+                            <span><?= e($item['text']) ?></span>
                         </li>
                     <?php endif; ?>
                 <?php endforeach; ?>
@@ -194,11 +209,12 @@ if ($galleryItems !== []) {
                 <h2 class="landing-section__title"><?= e($methods['title'] ?? '') ?></h2>
             </div>
 
-            <div class="landing-methods">
+            <div class="landing-methods-flow">
                 <?php foreach (($methods['items'] ?? []) as $index => $item): ?>
                     <?php if (!empty($item['text'])): ?>
-                        <div class="landing-methods__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
-                            <?= e($item['text']) ?>
+                        <div class="landing-methods-flow__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
+                            <span class="landing-methods-flow__marker" aria-hidden="true"><?= e(str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT)) ?></span>
+                            <p class="landing-methods-flow__text"><?= e($item['text']) ?></p>
                         </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
@@ -377,7 +393,8 @@ if ($galleryItems !== []) {
                     <div class="landing-quote-list">
                         <?php foreach ($quoteItems as $index => $item): ?>
                             <blockquote class="landing-quote" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
-                                <p class="landing-quote__text">“<?= e($item['quote'] ?? '') ?>”</p>
+                                <i class="fa-solid fa-quote-left landing-quote__icon" aria-hidden="true"></i>
+                                <p class="landing-quote__text">"<?= e($item['quote'] ?? '') ?>"</p>
                                 <?php if (!empty($item['author'])): ?>
                                     <footer class="landing-quote__author"><?= e($item['author']) ?></footer>
                                 <?php endif; ?>
@@ -399,7 +416,8 @@ if ($galleryItems !== []) {
                 <?php foreach (($included['items'] ?? []) as $index => $item): ?>
                     <?php if (!empty($item['text'])): ?>
                         <div class="landing-offer__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
-                            <?= e($item['text']) ?>
+                            <span class="landing-list__icon" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+                            <span><?= e($item['text']) ?></span>
                         </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
