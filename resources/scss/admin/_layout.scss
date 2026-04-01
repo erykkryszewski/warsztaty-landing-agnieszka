@@ -110,6 +110,13 @@ body.admin-auth-shell {
   border-bottom: 1px solid rgba(35, 25, 57, 0.08);
 }
 
+.admin-topbar__group {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
 .admin-topbar__user {
   display: flex;
   align-items: center;
@@ -135,6 +142,47 @@ body.admin-auth-shell {
   background: #ece8f0;
   color: #231939;
   font-size: 0.85rem;
+}
+
+.admin-topbar__deploy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid rgba(35, 25, 57, 0.08);
+  border-radius: 12px;
+  background: #f8f6fb;
+  color: #5a5670;
+
+  i {
+    font-size: 0.95rem;
+  }
+
+  strong,
+  span {
+    display: block;
+    line-height: 1.25;
+  }
+
+  strong {
+    font-size: 0.86rem;
+  }
+
+  span {
+    font-size: 0.78rem;
+    color: inherit;
+    opacity: 0.82;
+  }
+
+  &.is-success {
+    background: rgba(39, 174, 96, 0.08);
+    color: #1e8449;
+  }
+
+  &.is-error {
+    background: rgba(192, 57, 43, 0.08);
+    color: #c0392b;
+  }
 }
 
 .admin-topbar__site-link {
@@ -379,5 +427,11 @@ body.admin-auth-shell {
   .admin-sidebar {
     position: static;
     height: auto;
+  }
+
+  .admin-topbar,
+  .admin-topbar__group {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

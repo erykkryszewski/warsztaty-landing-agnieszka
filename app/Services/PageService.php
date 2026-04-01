@@ -189,7 +189,7 @@ class PageService
         );
 
         return array_merge($definition, [
-            'content' => array_replace_recursive($defaults, $content),
+            'content' => $content,
             'meta_title' => $row['meta_title'] ?? '',
             'meta_description' => $row['meta_description'] ?? '',
             'meta_image' => $row['meta_image'] ?? '',

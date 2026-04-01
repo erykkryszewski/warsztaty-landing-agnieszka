@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="<?= e(asset('assets/build/css/admin.css')) ?>">
 </head>
 <body class="admin-shell">
+    <?php
+    $deployState = $deployStatus['status'] ?? '';
+    $deployTimestamp = trim((string) ($deployStatus['build_finished_at'] ?? $deployStatus['generated_at'] ?? ''));
+    $deployDate = $deployTimestamp !== '' ? date('d.m.Y H:i', strtotime($deployTimestamp)) : '';
+    ?>
     <aside class="admin-sidebar">
         <a class="admin-sidebar__brand" href="<?= e(url('admin/')) ?>">
             <i class="fa-solid fa-cube"></i>
@@ -39,13 +44,39 @@
 
     <div class="admin-main">
         <header class="admin-topbar">
-            <div class="admin-topbar__user">
-                <div class="admin-topbar__avatar">
-                    <i class="fa-solid fa-user"></i>
+            <div class="admin-topbar__group">
+                <div class="admin-topbar__user">
+                    <div class="admin-topbar__avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div>
+                        <strong><?= e($currentUser['name'] ?? 'Administrator') ?></strong>
+                        <span><?= e($currentUser['email'] ?? '') ?></span>
+                    </div>
                 </div>
-                <div>
-                    <strong><?= e($currentUser['name'] ?? 'Administrator') ?></strong>
-                    <span><?= e($currentUser['email'] ?? '') ?></span>
+
+                <div class="admin-topbar__deploy <?= $deployState === 'success' ? 'is-success' : ($deployState === 'error' ? 'is-error' : 'is-idle') ?>">
+                    <i class="fa-solid <?= $deployState === 'success' ? 'fa-box-archive' : ($deployState === 'error' ? 'fa-triangle-exclamation' : 'fa-clock-rotate-left') ?>"></i>
+                    <div>
+                        <strong>
+                            <?php if ($deployState === 'success'): ?>
+                                Paczka deploy gotowa
+                            <?php elseif ($deployState === 'error'): ?>
+                                Ostatni build deploy nie powiodl sie
+                            <?php else: ?>
+                                Brak historii builda deploy
+                            <?php endif; ?>
+                        </strong>
+                        <span>
+                            <?php if ($deployState === 'error' && !empty($deployStatus['error'])): ?>
+                                <?= e($deployStatus['error']) ?>
+                            <?php elseif ($deployDate !== ''): ?>
+                                <?= e($deployDate) ?>
+                            <?php else: ?>
+                                Paczka pojawi sie po pierwszym zapisie danych.
+                            <?php endif; ?>
+                        </span>
+                    </div>
                 </div>
             </div>
             <a class="admin-topbar__site-link" href="<?= e(url('/')) ?>" target="_blank" rel="noreferrer">

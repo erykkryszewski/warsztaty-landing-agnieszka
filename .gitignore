@@ -29,6 +29,7 @@
 /storage/cache/*
 !/storage/logs/.gitkeep
 !/storage/cache/.gitkeep
+/storage/app/deploy-build-status.json
 
 # IDE
 .vscode/

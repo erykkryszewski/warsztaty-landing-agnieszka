@@ -87,5 +87,8 @@ Important:
 - upload the whole `deploy/` contents, including `database/` and `storage/app/`
 - do not skip `deployment.json` / `deploy-snapshot.json`
 - sync activity is logged to `storage/logs/deploy-sync.log`
+- every successful write from the admin panel now refreshes the `deploy/` package automatically
+- `php database/migrate.php` and `php database/seed.php` also refresh the package when they change the database
+- the latest build result is stored in `storage/app/deploy-build-status.json` and shown in the admin top bar
 
 The generated package includes `vendor`, built assets, uploads, and the current database content snapshot.

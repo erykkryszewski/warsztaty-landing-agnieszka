@@ -49,7 +49,6 @@ class BlogController extends Controller
             return $this->validationRedirect($result['errors'], $request->all(), '/admin/blog/create/');
         }
 
-        $this->rebuildDeployPackage();
 
         return $this->redirect('/admin/blog/', 'Dodano wpis.');
     }
@@ -93,7 +92,6 @@ class BlogController extends Controller
             return $this->validationRedirect($result['errors'], $request->all(), '/admin/blog/' . $id . '/edit/');
         }
 
-        $this->rebuildDeployPackage();
 
         return $this->redirect('/admin/blog/', 'Zapisano wpis.');
     }
@@ -102,7 +100,6 @@ class BlogController extends Controller
     {
         $this->app->make(PostService::class)->delete((int) $id);
 
-        $this->rebuildDeployPackage();
 
         return $this->redirect('/admin/blog/', 'Usunięto wpis.');
     }

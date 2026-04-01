@@ -19,7 +19,8 @@ return [
                     [
                         'name' => 'page_title',
                         'type' => 'text',
-                        'label' => 'Tytuł strony',
+                        'label' => 'Tytul SEO / karta przegladarki',
+                        'help' => 'To pole zmienia tytul w karcie przegladarki i SEO. Duzy naglowek na stronie zmienia pole "Naglowek widoczny na stronie".',
                         'default' => 'Kiełkująca Droga | Wyjazd rozwojowo-warsztatowy dla kobiet',
                     ],
                     [
@@ -31,7 +32,8 @@ return [
                     [
                         'name' => 'title',
                         'type' => 'text',
-                        'label' => 'Nagłówek',
+                        'label' => 'Naglowek widoczny na stronie',
+                        'help' => 'To jest glowny tekst widoczny w sekcji hero na stronie glownej.',
                         'default' => 'Zatrzymaj się. Posłuchaj siebie.',
                     ],
                     [
@@ -461,6 +463,7 @@ return [
                         'type' => 'repeater',
                         'label' => 'Zdjęcia galerii',
                         'button_label' => 'Dodaj zdjęcie',
+                        'min_items' => 6,
                         'fields' => [
                             [
                                 'name' => 'image',
@@ -726,7 +729,8 @@ return [
                     [
                         'name' => 'page_title',
                         'type' => 'text',
-                        'label' => 'Tytuł strony',
+                        'label' => 'Tytul strony i SEO',
+                        'help' => 'To pole ustawia naglowek strony oraz tytul w karcie przegladarki.',
                         'default' => 'Polityka prywatności',
                     ],
                     [

@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 use App\Core\Application;
 use App\Core\Response;
 use App\Core\View;
-use App\Deployment\DeployPackageBuilder;
+use App\Deployment\DeployPackageManager;
 use App\Services\AuthService;
 use App\Services\PageService;
 use App\Services\PluginManager;
@@ -90,6 +90,7 @@ abstract class Controller
             'siteSettings' => $this->app->make(SettingsService::class)->values(),
             'currentUser' => $this->app->make(AuthService::class)->user(),
             'adminNavigation' => $this->adminNavigation(),
+            'deployStatus' => $this->app->make(DeployPackageManager::class)->latestStatus(),
         ];
     }
 
@@ -120,16 +121,6 @@ abstract class Controller
 
         return $items;
     }
-
-    protected function rebuildDeployPackage(): void
-    {
-        try {
-            (new DeployPackageBuilder($this->app->basePath()))->build();
-        } catch (\Throwable) {
-            // Deploy build failure should not block admin saves
-        }
-    }
-
     private function safeBackUrl(mixed $referer, string $fallback): string
     {
         $fallbackUrl = url(ltrim($fallback, '/'));
@@ -153,6 +144,12 @@ abstract class Controller
         }
 
         $path = (string) ($refererParts['path'] ?? '/');
+        $appPath = rtrim((string) ($appUrlParts['path'] ?? ''), '/');
+
+        if ($appPath !== '' && $appPath !== '/' && str_starts_with($path, $appPath)) {
+            $path = substr($path, strlen($appPath)) ?: '/';
+        }
+
         $query = isset($refererParts['query']) ? '?' . $refererParts['query'] : '';
         $fragment = isset($refererParts['fragment']) ? '#' . $refererParts['fragment'] : '';
 

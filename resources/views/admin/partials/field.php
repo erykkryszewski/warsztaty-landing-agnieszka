@@ -55,37 +55,76 @@ $fieldValueString = string_value($fieldValue);
         </div>
     <?php elseif ($fieldType === 'repeater'): ?>
         <?php
+        $repeaterField = $field;
+        $repeaterLabel = $label;
+        $repeaterInputName = $inputName;
+        $repeaterErrorKey = $errorKey;
+        $repeaterButtonLabel = $repeaterField['button_label'] ?? 'Dodaj element';
+        $repeaterFields = is_array($repeaterField['fields'] ?? null) ? $repeaterField['fields'] : [];
         $items = is_array($fieldValue) ? $fieldValue : [];
+        $minimumItems = max(0, (int) ($field['min_items'] ?? 0));
+
+        while (count($items) < $minimumItems) {
+            $items[] = [];
+        }
+
         $childFilePrefixBase = field_name($filePrefix, $fieldName);
         $childRemovePrefixBase = $removePrefix !== '' ? field_name($removePrefix, $fieldName) : '';
+        $imageFieldNames = [];
+
+        foreach ($repeaterFields as $childFieldDefinition) {
+            if (($childFieldDefinition['type'] ?? '') === 'image') {
+                $imageFieldNames[] = (string) ($childFieldDefinition['name'] ?? '');
+            }
+        }
+
+        $supportsBulkImages = count($imageFieldNames) === 1 && $imageFieldNames[0] !== '';
         ?>
-        <div class="admin-repeater" data-repeater>
+        <div class="admin-repeater" data-repeater data-repeater-path="<?= e($repeaterInputName) ?>">
             <div class="admin-repeater__items" data-repeater-items>
                 <?php foreach ($items as $index => $item): ?>
-                    <div class="admin-repeater__item" data-repeater-item>
+                    <div class="admin-repeater__item" data-repeater-item data-repeater-index="<?= e((string) $index) ?>">
                         <div class="admin-repeater__toolbar">
-                            <strong><?= e($label) ?> #<?= e((string) ($index + 1)) ?></strong>
+                            <strong data-repeater-item-title data-repeater-item-label="<?= e($repeaterLabel) ?>"><?= e($repeaterLabel) ?> #<?= e((string) ($index + 1)) ?></strong>
                             <button type="button" class="button button--danger button--small" data-repeater-remove><i class="fa-solid fa-trash"></i> Usuń</button>
                         </div>
                         <?php
                         $parentField = $field;
+                        $parentFieldName = $fieldName;
+                        $parentFieldType = $fieldType;
+                        $parentLabel = $label;
+                        $parentInputName = $inputName;
+                        $parentFileInputName = $fileInputName;
+                        $parentRemoveInputName = $removeInputName;
+                        $parentErrorKey = $errorKey;
+                        $parentFieldValue = $fieldValue;
+                        $parentFieldValueString = $fieldValueString;
                         $parentValue = $value;
                         $parentNamePrefix = $namePrefix;
                         $parentFilePrefix = $filePrefix;
                         $parentRemovePrefix = $removePrefix;
                         $parentErrorPrefix = $errorPrefix;
 
-                        foreach (($field['fields'] ?? []) as $childField) {
+                        foreach ($repeaterFields as $childField) {
                             $field = $childField;
                             $value = $item[$childField['name']] ?? null;
-                            $namePrefix = $inputName . '[' . $index . ']';
+                            $namePrefix = $repeaterInputName . '[' . $index . ']';
                             $filePrefix = $childFilePrefixBase . '[' . $index . ']';
                             $removePrefix = $childRemovePrefixBase !== '' ? $childRemovePrefixBase . '[' . $index . ']' : '';
-                            $errorPrefix = $errorKey . '.' . $index;
+                            $errorPrefix = $repeaterErrorKey . '.' . $index;
                             include __DIR__ . '/field.php';
                         }
 
                         $field = $parentField;
+                        $fieldName = $parentFieldName;
+                        $fieldType = $parentFieldType;
+                        $label = $parentLabel;
+                        $inputName = $parentInputName;
+                        $fileInputName = $parentFileInputName;
+                        $removeInputName = $parentRemoveInputName;
+                        $errorKey = $parentErrorKey;
+                        $fieldValue = $parentFieldValue;
+                        $fieldValueString = $parentFieldValueString;
                         $value = $parentValue;
                         $namePrefix = $parentNamePrefix;
                         $filePrefix = $parentFilePrefix;
@@ -97,30 +136,48 @@ $fieldValueString = string_value($fieldValue);
             </div>
 
             <template data-repeater-template>
-                <div class="admin-repeater__item" data-repeater-item>
+                <div class="admin-repeater__item" data-repeater-item data-repeater-index="__INDEX__">
                     <div class="admin-repeater__toolbar">
-                        <strong><?= e($label) ?></strong>
+                        <strong data-repeater-item-title data-repeater-item-label="<?= e($repeaterLabel) ?>"><?= e($repeaterLabel) ?></strong>
                         <button type="button" class="button button--danger button--small" data-repeater-remove><i class="fa-solid fa-trash"></i> Usuń</button>
                     </div>
                     <?php
                     $parentField = $field;
+                    $parentFieldName = $fieldName;
+                    $parentFieldType = $fieldType;
+                    $parentLabel = $label;
+                    $parentInputName = $inputName;
+                    $parentFileInputName = $fileInputName;
+                    $parentRemoveInputName = $removeInputName;
+                    $parentErrorKey = $errorKey;
+                    $parentFieldValue = $fieldValue;
+                    $parentFieldValueString = $fieldValueString;
                     $parentValue = $value;
                     $parentNamePrefix = $namePrefix;
                     $parentFilePrefix = $filePrefix;
                     $parentRemovePrefix = $removePrefix;
                     $parentErrorPrefix = $errorPrefix;
 
-                    foreach (($field['fields'] ?? []) as $childField) {
+                    foreach ($repeaterFields as $childField) {
                         $field = $childField;
                         $value = '';
-                        $namePrefix = $inputName . '[__INDEX__]';
+                        $namePrefix = $repeaterInputName . '[__INDEX__]';
                         $filePrefix = $childFilePrefixBase . '[__INDEX__]';
                         $removePrefix = $childRemovePrefixBase !== '' ? $childRemovePrefixBase . '[__INDEX__]' : '';
-                        $errorPrefix = $errorKey . '.__INDEX__';
+                        $errorPrefix = $repeaterErrorKey . '.__INDEX__';
                         include __DIR__ . '/field.php';
                     }
 
                     $field = $parentField;
+                    $fieldName = $parentFieldName;
+                    $fieldType = $parentFieldType;
+                    $label = $parentLabel;
+                    $inputName = $parentInputName;
+                    $fileInputName = $parentFileInputName;
+                    $removeInputName = $parentRemoveInputName;
+                    $errorKey = $parentErrorKey;
+                    $fieldValue = $parentFieldValue;
+                    $fieldValueString = $parentFieldValueString;
                     $value = $parentValue;
                     $namePrefix = $parentNamePrefix;
                     $filePrefix = $parentFilePrefix;
@@ -130,7 +187,15 @@ $fieldValueString = string_value($fieldValue);
                 </div>
             </template>
 
-            <button type="button" class="button button--small admin-repeater__add" data-repeater-add><i class="fa-solid fa-plus"></i> <?= e($field['button_label'] ?? 'Dodaj element') ?></button>
+            <?php if ($supportsBulkImages): ?>
+                <label class="admin-repeater__bulk-upload">
+                    <span class="admin-field__label">Dodaj kilka obrazkow naraz</span>
+                    <input type="file" accept=".jpg,.jpeg,.png,.webp,.svg,.ico" multiple data-repeater-bulk-upload>
+                    <small class="admin-field__help">Kazdy wybrany plik utworzy osobny element na liscie.</small>
+                </label>
+            <?php endif; ?>
+
+            <button type="button" class="button button--small admin-repeater__add" data-repeater-add><i class="fa-solid fa-plus"></i> <?= e($repeaterButtonLabel) ?></button>
         </div>
     <?php endif; ?>
 

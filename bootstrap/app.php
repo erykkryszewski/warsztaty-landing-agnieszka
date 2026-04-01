@@ -9,6 +9,7 @@ use App\Core\Env;
 use App\Core\Router;
 use App\Core\Session;
 use App\Core\View;
+use App\Deployment\DeployPackageManager;
 use App\Models\BlogPostModel;
 use App\Models\ContactMessageModel;
 use App\Models\PageModel;
@@ -69,6 +70,7 @@ $app->singleton(Csrf::class, static fn (Application $app): Csrf => new Csrf($app
 $app->singleton(Database::class, static fn (Application $app): Database => new Database($app->config('database')));
 $app->singleton(View::class, static fn (Application $app): View => new View($app));
 $app->singleton(Router::class, static fn (Application $app): Router => new Router($app));
+$app->singleton(DeployPackageManager::class, static fn (Application $app): DeployPackageManager => new DeployPackageManager($app->basePath()));
 
 $app->singleton(ContentFieldService::class, static fn (Application $app): ContentFieldService => new ContentFieldService($app));
 $app->singleton(UploadService::class, static fn (Application $app): UploadService => new UploadService($app));

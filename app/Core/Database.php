@@ -12,6 +12,8 @@ class Database
 {
     private ?PDO $pdo = null;
 
+    private bool $pendingMutations = false;
+
     public function __construct(private readonly array $config)
     {
     }
@@ -47,6 +49,7 @@ class Database
     {
         $statement = $this->pdo()->prepare($sql);
         $statement->execute($bindings);
+        $this->markMutationIfNeeded($sql);
 
         return $statement;
     }
@@ -71,5 +74,24 @@ class Database
     public function lastInsertId(): string
     {
         return $this->pdo()->lastInsertId();
+    }
+
+    public function hasPendingMutations(): bool
+    {
+        return $this->pendingMutations;
+    }
+
+    public function clearPendingMutations(): void
+    {
+        $this->pendingMutations = false;
+    }
+
+    private function markMutationIfNeeded(string $sql): void
+    {
+        $operation = strtoupper((string) preg_replace('/\s+.*/s', '', ltrim($sql)));
+
+        if (in_array($operation, ['INSERT', 'UPDATE', 'DELETE', 'REPLACE', 'ALTER', 'CREATE', 'DROP', 'TRUNCATE', 'RENAME'], true)) {
+            $this->pendingMutations = true;
+        }
     }
 }

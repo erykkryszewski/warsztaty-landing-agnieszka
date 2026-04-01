@@ -33,15 +33,14 @@ class PagesController extends Controller
 
         if (isset($old['content_remove']) && is_array($old['content_remove'])) {
             foreach ($old['content_remove'] as $groupKey => $groupRemovals) {
-                if (!is_array($groupRemovals)) {
+                if (!isset($page['content'][$groupKey])) {
                     continue;
                 }
 
-                foreach ($groupRemovals as $fieldKey => $remove) {
-                    if (in_array((string) $remove, ['1', 'true', 'on', 'yes'], true)) {
-                        $page['content'][$groupKey][$fieldKey] = '';
-                    }
-                }
+                $page['content'][$groupKey] = $this->applyQueuedRemovals(
+                    is_array($page['content'][$groupKey]) ? $page['content'][$groupKey] : [],
+                    $groupRemovals
+                );
             }
         }
 
@@ -58,6 +57,21 @@ class PagesController extends Controller
         ]);
     }
 
+    private function applyQueuedRemovals(mixed $content, mixed $removals): mixed
+    {
+        if (!is_array($removals)) {
+            return in_array((string) $removals, ['1', 'true', 'on', 'yes'], true) ? '' : $content;
+        }
+
+        $current = is_array($content) ? $content : [];
+
+        foreach ($removals as $key => $value) {
+            $current[$key] = $this->applyQueuedRemovals($current[$key] ?? null, $value);
+        }
+
+        return $current;
+    }
+
     public function update(Request $request, string $pageKey): \App\Core\Response
     {
         $result = $this->app->make(PageService::class)->update(
@@ -71,8 +85,6 @@ class PagesController extends Controller
         if (($result['errors'] ?? []) !== []) {
             return $this->validationRedirect($result['errors'], $request->all(), '/admin/pages/' . $pageKey . '/');
         }
-
-        $this->rebuildDeployPackage();
 
         return $this->redirect('/admin/pages/' . $pageKey . '/', 'Zapisano zmiany.');
     }
