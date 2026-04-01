@@ -293,6 +293,33 @@ if (!function_exists('opens_in_new_tab')) {
     }
 }
 
+if (!function_exists('section_has_content')) {
+    function section_has_content(array $group, array $keys): bool
+    {
+        foreach ($keys as $key) {
+            $value = $group[$key] ?? null;
+
+            if (is_array($value)) {
+                foreach ($value as $item) {
+                    if (is_array($item)) {
+                        foreach ($item as $v) {
+                            if (is_string($v) && trim($v) !== '') {
+                                return true;
+                            }
+                        }
+                    } elseif (is_string($item) && trim($item) !== '') {
+                        return true;
+                    }
+                }
+            } elseif (is_string($value) && trim($value) !== '') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
 if (!function_exists('plugin_slot')) {
     function plugin_slot(string $pageKey, string $slot, array $context = []): string
     {

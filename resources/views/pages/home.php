@@ -106,6 +106,7 @@ if ($galleryItems !== []) {
         </div>
     </section>
 
+    <?php if (section_has_content($audience, ['title', 'items'])): ?>
     <section id="dla-kogo" class="landing-section landing-section--soft">
         <div class="container">
             <div class="landing-section__intro" data-reveal>
@@ -128,7 +129,9 @@ if ($galleryItems !== []) {
             <?php endif; ?>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($retreat, ['title', 'items'])): ?>
     <section class="landing-section">
         <div class="container landing-split" data-reveal>
             <div class="landing-split__intro">
@@ -150,7 +153,9 @@ if ($galleryItems !== []) {
             </ul>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($pillars, ['title', 'items'])): ?>
     <section class="landing-section landing-section--accent">
         <div class="container">
             <div class="landing-section__intro" data-reveal>
@@ -170,7 +175,9 @@ if ($galleryItems !== []) {
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($benefits, ['title', 'items'])): ?>
     <section class="landing-section">
         <div class="container">
             <div class="landing-section__intro" data-reveal>
@@ -202,7 +209,9 @@ if ($galleryItems !== []) {
             </ul>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($methods, ['title', 'items'])): ?>
     <section class="landing-section landing-section--soft">
         <div class="container">
             <div class="landing-section__intro" data-reveal>
@@ -221,7 +230,9 @@ if ($galleryItems !== []) {
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($emotion, ['title', 'body'])): ?>
     <section class="landing-section">
         <div class="container landing-emotion">
             <div class="landing-emotion__content" data-reveal>
@@ -247,6 +258,7 @@ if ($galleryItems !== []) {
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <?php
     $videoPoster = content_image($video['poster'] ?? '');
@@ -291,6 +303,7 @@ if ($galleryItems !== []) {
     </section>
     <?php endif; ?>
 
+    <?php if (section_has_content($team, ['title', 'items'])): ?>
     <section class="landing-section landing-section--soft">
         <div class="container">
             <div class="landing-section__intro" data-reveal>
@@ -332,7 +345,9 @@ if ($galleryItems !== []) {
             <?php endif; ?>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($proof, ['title', 'gallery_items', 'videos', 'quotes'])): ?>
     <section class="landing-section">
         <div class="container">
             <div class="landing-section__intro" data-reveal>
@@ -405,7 +420,9 @@ if ($galleryItems !== []) {
             <?php endif; ?>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($included, ['title', 'items'])): ?>
     <section id="co-zawiera" class="landing-section landing-section--accent">
         <div class="container">
             <div class="landing-section__intro" data-reveal>
@@ -424,7 +441,9 @@ if ($galleryItems !== []) {
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($pricing, ['title', 'price']) || section_has_content($reservation, ['title', 'body'])): ?>
     <section class="landing-section">
         <div class="container landing-booking">
             <div class="landing-pricing" data-reveal>
@@ -479,7 +498,9 @@ if ($galleryItems !== []) {
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
+    <?php if (section_has_content($final, ['title', 'body'])): ?>
     <section class="landing-section">
         <div class="container">
             <div class="landing-final" data-reveal>
@@ -498,6 +519,7 @@ if ($galleryItems !== []) {
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
     <?php if (!empty($hero['primary_cta_label'])): ?>
         <div class="sticky-cta">

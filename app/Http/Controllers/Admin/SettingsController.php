@@ -49,6 +49,8 @@ class SettingsController extends Controller
             return $this->validationRedirect($result['errors'], $request->all(), '/admin/settings/');
         }
 
+        $this->rebuildDeployPackage();
+
         return $this->redirect('/admin/settings/', 'Zapisano zmiany.');
     }
 }

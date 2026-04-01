@@ -72,6 +72,8 @@ class PagesController extends Controller
             return $this->validationRedirect($result['errors'], $request->all(), '/admin/pages/' . $pageKey . '/');
         }
 
+        $this->rebuildDeployPackage();
+
         return $this->redirect('/admin/pages/' . $pageKey . '/', 'Zapisano zmiany.');
     }
 }

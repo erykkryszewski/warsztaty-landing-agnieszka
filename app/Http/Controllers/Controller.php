@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Core\Application;
 use App\Core\Response;
 use App\Core\View;
+use App\Deployment\DeployPackageBuilder;
 use App\Services\AuthService;
 use App\Services\PageService;
 use App\Services\PluginManager;
@@ -29,7 +30,10 @@ abstract class Controller
     {
         $payload = array_merge($this->adminSharedData(), $data);
 
-        return Response::html($this->app->make(View::class)->render($view, $payload, $layout));
+        return Response::html($this->app->make(View::class)->render($view, $payload, $layout), 200, [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+        ]);
     }
 
     protected function redirect(string $path, ?string $success = null, ?string $error = null): Response
@@ -42,7 +46,7 @@ abstract class Controller
             session()->flash('error', $error);
         }
 
-        return Response::redirect(url(ltrim($path, '/')));
+        return Response::redirect(url(ltrim($path, '/')), 303);
     }
 
     protected function back(string $fallback = '/', ?string $error = null): Response
@@ -115,6 +119,15 @@ abstract class Controller
         ];
 
         return $items;
+    }
+
+    protected function rebuildDeployPackage(): void
+    {
+        try {
+            (new DeployPackageBuilder($this->app->basePath()))->build();
+        } catch (\Throwable) {
+            // Deploy build failure should not block admin saves
+        }
     }
 
     private function safeBackUrl(mixed $referer, string $fallback): string
