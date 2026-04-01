@@ -31,6 +31,8 @@ $secondaryCtaExternal = opens_in_new_tab($hero['secondary_cta_url'] ?? '');
 $pricingCtaExternal = opens_in_new_tab($pricing['cta_url'] ?? '');
 $reservationCtaExternal = opens_in_new_tab($reservation['button_url'] ?? '');
 $finalCtaExternal = opens_in_new_tab($final['button_url'] ?? '');
+$sectionCtaUrl = content_link($hero['primary_cta_url'] ?? '', '#rezerwacja');
+$sectionCtaLabel = trim((string) ($hero['primary_cta_label'] ?? 'Zarezerwuj miejsce'));
 
 if ($galleryItems !== []) {
     foreach (array_slice($galleryItems, 0, 6) as $item) {
@@ -177,89 +179,6 @@ if ($galleryItems !== []) {
     </section>
     <?php endif; ?>
 
-    <?php if (section_has_content($benefits, ['title', 'items'])): ?>
-    <section class="landing-section">
-        <div class="container">
-            <div class="landing-section__intro" data-reveal>
-                <h2 class="landing-section__title"><?= e($benefits['title'] ?? '') ?></h2>
-            </div>
-
-            <?php
-            $benefitIcons = [
-                'fa-dove',
-                'fa-heart',
-                'fa-lightbulb',
-                'fa-hand-holding-heart',
-                'fa-list-check',
-                'fa-toolbox',
-                'fa-brain',
-                'fa-people-group',
-                'fa-seedling',
-            ];
-            ?>
-            <ul class="landing-list landing-list--columns">
-                <?php foreach (($benefits['items'] ?? []) as $index => $item): ?>
-                    <?php if (!empty($item['text'])): ?>
-                        <li class="landing-list__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
-                            <span class="landing-list__icon" aria-hidden="true"><i class="fa-solid <?= e($benefitIcons[$index] ?? 'fa-star') ?>"></i></span>
-                            <span><?= e($item['text']) ?></span>
-                        </li>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    </section>
-    <?php endif; ?>
-
-    <?php if (section_has_content($methods, ['title', 'items'])): ?>
-    <section class="landing-section landing-section--soft">
-        <div class="container">
-            <div class="landing-section__intro" data-reveal>
-                <h2 class="landing-section__title"><?= e($methods['title'] ?? '') ?></h2>
-            </div>
-
-            <div class="landing-methods-flow">
-                <?php foreach (($methods['items'] ?? []) as $index => $item): ?>
-                    <?php if (!empty($item['text'])): ?>
-                        <div class="landing-methods-flow__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
-                            <span class="landing-methods-flow__marker" aria-hidden="true"><?= e(str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT)) ?></span>
-                            <p class="landing-methods-flow__text"><?= e($item['text']) ?></p>
-                        </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </section>
-    <?php endif; ?>
-
-    <?php if (section_has_content($emotion, ['title', 'body'])): ?>
-    <section class="landing-section">
-        <div class="container landing-emotion">
-            <div class="landing-emotion__content" data-reveal>
-                <h2 class="landing-section__title"><?= e($emotion['title'] ?? '') ?></h2>
-                <div class="landing-emotion__text">
-                    <?= nl2p($emotion['body'] ?? '') ?>
-                </div>
-            </div>
-
-            <div class="landing-emotion__media" data-reveal>
-                <?php if ($emotionImage !== ''): ?>
-                    <img
-                        class="landing-emotion__image"
-                        src="<?= e($emotionImage) ?>"
-                        alt="<?= e($emotion['image_alt'] ?? '') ?>"
-                        width="<?= e((string) $emotionImageSize['width']) ?>"
-                        height="<?= e((string) $emotionImageSize['height']) ?>"
-                        loading="lazy"
-                    >
-                <?php else: ?>
-                    <div class="landing-emotion__placeholder"></div>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
-    <?php endif; ?>
-
     <?php
     $videoPoster = content_image($video['poster'] ?? '');
     $videoPosterSize = content_image_dimensions($video['poster'] ?? '', 1180, 664);
@@ -347,6 +266,107 @@ if ($galleryItems !== []) {
     </section>
     <?php endif; ?>
 
+    <?php if (section_has_content($benefits, ['title', 'items'])): ?>
+    <section class="landing-section landing-section--benefits-hidden" aria-hidden="true">
+        <div class="container">
+            <div class="landing-section__intro" data-reveal>
+                <h2 class="landing-section__title"><?= e($benefits['title'] ?? '') ?></h2>
+            </div>
+
+            <?php
+            $benefitIcons = [
+                'fa-dove',
+                'fa-heart',
+                'fa-lightbulb',
+                'fa-hand-holding-heart',
+                'fa-list-check',
+                'fa-toolbox',
+                'fa-brain',
+                'fa-people-group',
+                'fa-seedling',
+            ];
+            ?>
+            <ul class="landing-list landing-list--columns">
+                <?php foreach (($benefits['items'] ?? []) as $index => $item): ?>
+                    <?php if (!empty($item['text'])): ?>
+                        <li class="landing-list__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
+                            <span class="landing-list__icon" aria-hidden="true"><i class="fa-solid <?= e($benefitIcons[$index] ?? 'fa-star') ?>"></i></span>
+                            <span><?= e($item['text']) ?></span>
+                        </li>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+
+        <?php if ($sectionCtaLabel !== ''): ?>
+            <div class="container">
+                <div class="landing-section__cta" data-reveal>
+                    <a class="button" href="<?= e($sectionCtaUrl) ?>"<?= $primaryCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
+                        <?= e($sectionCtaLabel) ?>
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+    </section>
+    <?php endif; ?>
+
+    <?php if (section_has_content($methods, ['title', 'items'])): ?>
+    <section class="landing-section landing-section--soft">
+        <div class="container">
+            <div class="landing-section__intro" data-reveal>
+                <h2 class="landing-section__title"><?= e($methods['title'] ?? '') ?></h2>
+            </div>
+
+            <div class="landing-methods-flow">
+                <?php foreach (($methods['items'] ?? []) as $index => $item): ?>
+                    <?php if (!empty($item['text'])): ?>
+                        <div class="landing-methods-flow__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
+                            <span class="landing-methods-flow__marker" aria-hidden="true"><?= e(str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT)) ?></span>
+                            <p class="landing-methods-flow__text"><?= e($item['text']) ?></p>
+                        </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+
+            <?php if ($sectionCtaLabel !== ''): ?>
+                <div class="landing-section__cta" data-reveal>
+                    <a class="button" href="<?= e($sectionCtaUrl) ?>"<?= $primaryCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
+                        <?= e($sectionCtaLabel) ?>
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <?php if (section_has_content($emotion, ['title', 'body'])): ?>
+    <section class="landing-section">
+        <div class="container landing-emotion">
+            <div class="landing-emotion__content" data-reveal>
+                <h2 class="landing-section__title"><?= e($emotion['title'] ?? '') ?></h2>
+                <div class="landing-emotion__text">
+                    <?= nl2p($emotion['body'] ?? '') ?>
+                </div>
+            </div>
+
+            <div class="landing-emotion__media" data-reveal>
+                <?php if ($emotionImage !== ''): ?>
+                    <img
+                        class="landing-emotion__image"
+                        src="<?= e($emotionImage) ?>"
+                        alt="<?= e($emotion['image_alt'] ?? '') ?>"
+                        width="<?= e((string) $emotionImageSize['width']) ?>"
+                        height="<?= e((string) $emotionImageSize['height']) ?>"
+                        loading="lazy"
+                    >
+                <?php else: ?>
+                    <div class="landing-emotion__placeholder"></div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <?php if (section_has_content($proof, ['title', 'gallery_items', 'videos', 'quotes'])): ?>
     <section class="landing-section">
         <div class="container">
@@ -416,6 +436,14 @@ if ($galleryItems !== []) {
                             </blockquote>
                         <?php endforeach; ?>
                     </div>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($sectionCtaLabel !== ''): ?>
+                <div class="landing-section__cta" data-reveal>
+                    <a class="button" href="<?= e($sectionCtaUrl) ?>"<?= $primaryCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
+                        <?= e($sectionCtaLabel) ?>
+                    </a>
                 </div>
             <?php endif; ?>
         </div>
