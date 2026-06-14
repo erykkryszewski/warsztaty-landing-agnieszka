@@ -10,6 +10,7 @@
 <body class="admin-shell">
     <?php
     $deployState = $deployStatus['status'] ?? '';
+    $deployMode = (string) ($deployStatus['mode'] ?? 'full');
     $deployTimestamp = trim((string) ($deployStatus['build_finished_at'] ?? $deployStatus['generated_at'] ?? ''));
     $deployDate = $deployTimestamp !== '' ? date('d.m.Y H:i', strtotime($deployTimestamp)) : '';
     ?>
@@ -60,7 +61,7 @@
                     <div>
                         <strong>
                             <?php if ($deployState === 'success'): ?>
-                                Paczka deploy gotowa
+                                Paczka deploy <?= $deployMode === 'light' ? 'light' : 'full' ?> gotowa
                             <?php elseif ($deployState === 'error'): ?>
                                 Ostatni build deploy nie powiodl sie
                             <?php else: ?>

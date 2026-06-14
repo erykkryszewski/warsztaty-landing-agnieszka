@@ -267,9 +267,9 @@ if ($galleryItems !== []) {
     <?php endif; ?>
 
     <?php if (section_has_content($benefits, ['title', 'items'])): ?>
-    <section class="landing-section landing-section--benefits-hidden" aria-hidden="true">
+    <section id="korzysci" class="landing-section landing-section--accent landing-section--benefits">
         <div class="container">
-            <div class="landing-section__intro" data-reveal>
+            <div class="landing-section__intro">
                 <h2 class="landing-section__title"><?= e($benefits['title'] ?? '') ?></h2>
             </div>
 
@@ -289,7 +289,7 @@ if ($galleryItems !== []) {
             <ul class="landing-list landing-list--columns">
                 <?php foreach (($benefits['items'] ?? []) as $index => $item): ?>
                     <?php if (!empty($item['text'])): ?>
-                        <li class="landing-list__item" data-reveal style="--reveal-order: <?= e((string) ($index + 1)) ?>;">
+                        <li class="landing-list__item">
                             <span class="landing-list__icon" aria-hidden="true"><i class="fa-solid <?= e($benefitIcons[$index] ?? 'fa-star') ?>"></i></span>
                             <span><?= e($item['text']) ?></span>
                         </li>
@@ -300,7 +300,7 @@ if ($galleryItems !== []) {
 
         <?php if ($sectionCtaLabel !== ''): ?>
             <div class="container">
-                <div class="landing-section__cta" data-reveal>
+                <div class="landing-section__cta">
                     <a class="button" href="<?= e($sectionCtaUrl) ?>"<?= $primaryCtaExternal ? ' target="_blank" rel="noopener noreferrer"' : '' ?>>
                         <?= e($sectionCtaLabel) ?>
                     </a>

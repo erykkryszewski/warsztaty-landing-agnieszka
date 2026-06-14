@@ -29,6 +29,8 @@ const updateRepeaterItemTitle = (item, index) => {
 
 const updateRepeaterItemAttributes = (repeater, item, nextIndex) => {
   const repeaterPath = repeater.dataset.repeaterPath ?? '';
+  const repeaterFilePath = repeater.dataset.repeaterFilePath ?? '';
+  const repeaterRemovePath = repeater.dataset.repeaterRemovePath ?? '';
   const currentIndex = item.dataset.repeaterIndex ?? String(nextIndex);
 
   if (repeaterPath === '') {
@@ -37,10 +39,14 @@ const updateRepeaterItemAttributes = (repeater, item, nextIndex) => {
     return;
   }
 
-  const oldPrefix = `${repeaterPath}[${currentIndex}]`;
-  const newPrefix = `${repeaterPath}[${nextIndex}]`;
-  const oldIdPrefix = fieldId(oldPrefix);
-  const newIdPrefix = fieldId(newPrefix);
+  const prefixes = [
+    repeaterPath,
+    repeaterFilePath,
+    repeaterRemovePath,
+  ].filter((path) => path !== '').map((path) => ({
+    oldValue: `${path}[${currentIndex}]`,
+    newValue: `${path}[${nextIndex}]`,
+  }));
   const elements = [item, ...item.querySelectorAll('*')];
 
   elements.forEach((element) => {
@@ -48,10 +54,14 @@ const updateRepeaterItemAttributes = (repeater, item, nextIndex) => {
       return;
     }
 
-    updateAttributePrefix(element, 'name', oldPrefix, newPrefix);
-    updateAttributePrefix(element, 'id', oldIdPrefix, newIdPrefix);
-    updateAttributePrefix(element, 'for', oldIdPrefix, newIdPrefix);
-    updateAttributePrefix(element, 'data-repeater-path', oldPrefix, newPrefix);
+    prefixes.forEach(({ oldValue, newValue }) => {
+      updateAttributePrefix(element, 'name', oldValue, newValue);
+      updateAttributePrefix(element, 'id', fieldId(oldValue), fieldId(newValue));
+      updateAttributePrefix(element, 'for', fieldId(oldValue), fieldId(newValue));
+      updateAttributePrefix(element, 'data-repeater-path', oldValue, newValue);
+      updateAttributePrefix(element, 'data-repeater-file-path', oldValue, newValue);
+      updateAttributePrefix(element, 'data-repeater-remove-path', oldValue, newValue);
+    });
   });
 
   item.dataset.repeaterIndex = String(nextIndex);

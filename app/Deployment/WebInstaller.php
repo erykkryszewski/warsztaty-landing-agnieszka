@@ -384,7 +384,14 @@ HTML;
 
     private function isDeployPackage(): bool
     {
-        return $this->hasDeploymentMetadata() && $this->hasSnapshot();
+        return $this->hasDeploymentMetadata()
+            && $this->shouldSyncDatabase($this->deploymentConfig())
+            && $this->hasSnapshot();
+    }
+
+    private function shouldSyncDatabase(array $deployment): bool
+    {
+        return (bool) ($deployment['database_sync'] ?? true);
     }
 
     private function isInstalled(): bool

@@ -156,6 +156,22 @@ class ContentFieldService
             if ($field['type'] === 'image') {
                 $data[$name] = $currentValue;
                 $removeRequested = $this->shouldRemoveValue($removals[$name] ?? null);
+                $uploadError = is_array($file) ? (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) : UPLOAD_ERR_NO_FILE;
+
+                if ($uploadError !== UPLOAD_ERR_NO_FILE && $uploadError !== UPLOAD_ERR_OK) {
+                    $errors[$path] = $this->uploadErrorMessage($uploadError);
+                    continue;
+                }
+
+                if (is_array($file) && $uploadError === UPLOAD_ERR_OK) {
+                    try {
+                        $data[$name] = $imageUploader($file, $field, is_string($data[$name]) ? $data[$name] : null);
+                    } catch (\Throwable $exception) {
+                        $errors[$path] = 'Nie udaĹ‚o siÄ™ zapisaÄ‡ pliku.';
+                    }
+
+                    continue;
+                }
 
                 if ($removeRequested) {
                     try {
@@ -167,7 +183,14 @@ class ContentFieldService
                     }
                 }
 
-                if (is_array($file) && (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+                $uploadError = is_array($file) ? (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) : UPLOAD_ERR_NO_FILE;
+
+                if ($uploadError !== UPLOAD_ERR_NO_FILE && $uploadError !== UPLOAD_ERR_OK) {
+                    $errors[$path] = $this->uploadErrorMessage($uploadError);
+                    continue;
+                }
+
+                if (is_array($file) && $uploadError === UPLOAD_ERR_OK) {
                     try {
                         $data[$name] = $imageUploader($file, $field, is_string($data[$name]) ? $data[$name] : null);
                     } catch (\Throwable $exception) {
@@ -330,6 +353,18 @@ class ContentFieldService
         }
 
         return in_array((string) $value, ['1', 'true', 'on', 'yes'], true);
+    }
+
+    private function uploadErrorMessage(int $error): string
+    {
+        return match ($error) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Plik jest za duzy dla limitow serwera.',
+            UPLOAD_ERR_PARTIAL => 'Plik zostal przeslany tylko czesciowo. Sprobuj ponownie.',
+            UPLOAD_ERR_NO_TMP_DIR => 'Brakuje katalogu tymczasowego uploadu na serwerze.',
+            UPLOAD_ERR_CANT_WRITE => 'Serwer nie mogl zapisac przeslanego pliku.',
+            UPLOAD_ERR_EXTENSION => 'Upload zostal zatrzymany przez rozszerzenie PHP.',
+            default => 'Nie udalo sie przeslac pliku.',
+        };
     }
 
     private function sanitizeRichTextNode(DOMNode $node): string

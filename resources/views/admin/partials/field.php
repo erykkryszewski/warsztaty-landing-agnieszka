@@ -80,7 +80,13 @@ $fieldValueString = string_value($fieldValue);
 
         $supportsBulkImages = count($imageFieldNames) === 1 && $imageFieldNames[0] !== '';
         ?>
-        <div class="admin-repeater" data-repeater data-repeater-path="<?= e($repeaterInputName) ?>">
+        <div
+            class="admin-repeater"
+            data-repeater
+            data-repeater-path="<?= e($repeaterInputName) ?>"
+            data-repeater-file-path="<?= e($childFilePrefixBase) ?>"
+            data-repeater-remove-path="<?= e($childRemovePrefixBase) ?>"
+        >
             <div class="admin-repeater__items" data-repeater-items>
                 <?php foreach ($items as $index => $item): ?>
                     <div class="admin-repeater__item" data-repeater-item data-repeater-index="<?= e((string) $index) ?>">

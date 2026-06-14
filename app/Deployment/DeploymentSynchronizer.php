@@ -21,11 +21,16 @@ class DeploymentSynchronizer
 
     public function runIfNeeded(): void
     {
-        if (!$this->isDeployPackage() || !$this->isInstalled()) {
+        if (!$this->hasDeploymentMetadata() || !$this->isInstalled()) {
             return;
         }
 
         $deployment = $this->deploymentConfig();
+
+        if (!$this->shouldSyncDatabase($deployment) || !$this->hasSnapshot()) {
+            return;
+        }
+
         $generatedAt = (string) ($deployment['generated_at'] ?? '');
 
         if ($generatedAt === '' || !$this->needsSync($deployment)) {
@@ -149,6 +154,11 @@ class DeploymentSynchronizer
     private function isDeployPackage(): bool
     {
         return $this->hasDeploymentMetadata() && $this->hasSnapshot();
+    }
+
+    private function shouldSyncDatabase(array $deployment): bool
+    {
+        return (bool) ($deployment['database_sync'] ?? true);
     }
 
     private function isInstalled(): bool

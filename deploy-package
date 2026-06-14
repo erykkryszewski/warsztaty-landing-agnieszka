@@ -11,9 +11,31 @@ require BASE_PATH . '/vendor/autoload.php';
 
 Env::load(BASE_PATH . '/.env');
 
+$arguments = $argv ?? [];
+$helpRequested = in_array('--help', $arguments, true) || in_array('-h', $arguments, true);
+$lightMode = in_array('--light', $arguments, true);
+$mode = $lightMode ? 'light' : 'full';
+
+if ($helpRequested) {
+    echo 'Usage: php deploy-package [--light]' . PHP_EOL;
+    echo PHP_EOL;
+    echo 'Default mode builds a full package with a database snapshot and installer.' . PHP_EOL;
+    echo '--light builds a code/assets package without database snapshot or database sync.' . PHP_EOL;
+    exit(0);
+}
+
 $manager = new DeployPackageManager(BASE_PATH);
-$result = $manager->build('cli-manual');
+$result = $manager->build($lightMode ? 'cli-manual-light' : 'cli-manual', $mode);
 
 echo 'Deploy package created: ' . $result['path'] . PHP_EOL;
-echo 'Install key: ' . $result['install_key'] . PHP_EOL;
+echo 'Mode: ' . ($result['mode'] ?? $mode) . PHP_EOL;
+
+if (($result['database_sync'] ?? true) === true) {
+    echo 'Install key: ' . $result['install_key'] . PHP_EOL;
+    echo 'Database snapshot: included' . PHP_EOL;
+} else {
+    echo 'Database snapshot: skipped' . PHP_EOL;
+    echo 'Database sync: disabled' . PHP_EOL;
+}
+
 echo 'Instructions: ' . BASE_PATH . '/deploy/INSTALL_INSTRUCTIONS.txt' . PHP_EOL;

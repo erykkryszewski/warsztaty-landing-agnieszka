@@ -12,7 +12,8 @@ class Request
         private readonly array $query = [],
         private readonly array $request = [],
         private readonly array $files = [],
-        private readonly array $server = []
+        private readonly array $server = [],
+        private readonly ?string $uploadError = null
     ) {
     }
 
@@ -38,7 +39,8 @@ class Request
             $_GET,
             $_POST,
             self::normalizeUploadedFiles($_FILES),
-            $_SERVER
+            $_SERVER,
+            self::detectUploadPayloadError($_SERVER)
         );
     }
 
@@ -108,6 +110,11 @@ class Request
         return (string) ($this->server['HTTP_USER_AGENT'] ?? '');
     }
 
+    public function uploadError(): ?string
+    {
+        return $this->uploadError;
+    }
+
     public static function normalizeUploadedFiles(array $files): array
     {
         $normalized = [];
@@ -159,5 +166,54 @@ class Request
         }
 
         return $files;
+    }
+
+    private static function detectUploadPayloadError(array $server): ?string
+    {
+        $method = strtoupper((string) ($server['REQUEST_METHOD'] ?? 'GET'));
+        $contentLength = (int) ($server['CONTENT_LENGTH'] ?? 0);
+        $postMaxSize = self::iniBytes((string) ini_get('post_max_size'));
+
+        if ($method !== 'POST' || $contentLength <= 0 || $postMaxSize <= 0 || $contentLength <= $postMaxSize) {
+            return null;
+        }
+
+        return sprintf(
+            'Wysylany formularz jest za duzy. Limit serwera to %s, a formularz ma okolo %s. Zmniejsz liczbe lub rozmiar zdjec i sproboj ponownie.',
+            self::formatBytes($postMaxSize),
+            self::formatBytes($contentLength)
+        );
+    }
+
+    private static function iniBytes(string $value): int
+    {
+        $value = trim($value);
+
+        if ($value === '') {
+            return 0;
+        }
+
+        $unit = strtolower($value[strlen($value) - 1]);
+        $number = (float) $value;
+
+        return match ($unit) {
+            'g' => (int) ($number * 1024 * 1024 * 1024),
+            'm' => (int) ($number * 1024 * 1024),
+            'k' => (int) ($number * 1024),
+            default => (int) $number,
+        };
+    }
+
+    private static function formatBytes(int $bytes): string
+    {
+        if ($bytes >= 1024 * 1024) {
+            return round($bytes / 1024 / 1024, 1) . ' MB';
+        }
+
+        if ($bytes >= 1024) {
+            return round($bytes / 1024, 1) . ' KB';
+        }
+
+        return $bytes . ' B';
     }
 }

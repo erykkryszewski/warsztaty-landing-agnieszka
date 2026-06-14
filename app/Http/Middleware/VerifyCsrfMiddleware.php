@@ -17,6 +17,12 @@ class VerifyCsrfMiddleware
 
     public function handle(Request $request): ?Response
     {
+        if ($request->uploadError() !== null) {
+            session()->flash('error', $request->uploadError());
+
+            return Response::redirect((string) $request->server('HTTP_REFERER', url('/')));
+        }
+
         $token = $request->input('_token');
 
         if (!$this->app->make(Csrf::class)->verify(is_string($token) ? $token : null)) {

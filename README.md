@@ -65,8 +65,10 @@ composer install && composer dump-autoload
 npm install && npm run build
 php database/migrate.php
 php database/seed.php
+php reset-admin.php --email=ercodingpl@gmail.com
 php reset.php --confirm
 php deploy-package
+php deploy-package --light
 ```
 
 ## Deployment package
@@ -81,14 +83,38 @@ Creates a ready-to-upload `deploy/` directory in the project root. Upload its co
 - enter MySQL host, port, database name, user, and password
 - installer writes `.env`, restores the packaged database snapshot, runs pending migrations/seeds, and redirects to the live site
 
-Every next package generated with `php deploy-package` also contains a fresh database snapshot plus deploy metadata. After uploading the new package over the existing production files, the first request automatically syncs the production database to the packaged state.
+Every next full package generated with `php deploy-package` also contains a fresh database snapshot plus deploy metadata. After uploading the new full package over the existing production files, the first request automatically syncs the production database to the packaged state.
 
 Important:
 - upload the whole `deploy/` contents, including `database/` and `storage/app/`
 - do not skip `deployment.json` / `deploy-snapshot.json`
 - sync activity is logged to `storage/logs/deploy-sync.log`
-- every successful write from the admin panel now refreshes the `deploy/` package automatically
+- admin panel writes do not refresh the `deploy/` package automatically; run `php deploy-package` or `php deploy-package --light` manually
 - `php database/migrate.php` and `php database/seed.php` also refresh the package when they change the database
 - the latest build result is stored in `storage/app/deploy-build-status.json` and shown in the admin top bar
 
 The generated package includes `vendor`, built assets, uploads, and the current database content snapshot.
+
+### Light deployment
+
+```bash
+php deploy-package --light
+```
+
+Creates a code/assets deployment package without `database/deploy-snapshot.*`.
+Use this only for updates of an already installed production site. A light package:
+
+- updates backend/frontend files, `vendor`, assets, resources, routes, config, and uploads included in the package
+- writes deployment metadata with database sync disabled
+- does not show the first-install installer
+- does not overwrite or synchronize production database content
+
+For first install or intentional content/database synchronization, use the default full `php deploy-package`.
+
+### Admin reset
+
+```bash
+php reset-admin.php --email=ercodingpl@gmail.com
+```
+
+The script prompts for a new password, creates or resets that user as `superadmin`, and clears login rate-limit files.

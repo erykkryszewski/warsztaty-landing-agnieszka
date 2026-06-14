@@ -10,15 +10,17 @@ class DeployPackageManager
     {
     }
 
-    public function build(string $reason = 'manual'): array
+    public function build(string $reason = 'manual', string $mode = 'full'): array
     {
         $startedAt = date(DATE_ATOM);
 
         try {
-            $result = (new DeployPackageBuilder($this->basePath))->build();
+            $result = (new DeployPackageBuilder($this->basePath))->build($mode);
             $status = [
                 'status' => 'success',
                 'reason' => $reason,
+                'mode' => $result['mode'] ?? $mode,
+                'database_sync' => (bool) ($result['database_sync'] ?? true),
                 'build_started_at' => $startedAt,
                 'build_finished_at' => date(DATE_ATOM),
                 'generated_at' => $result['generated_at'] ?? '',
@@ -30,6 +32,8 @@ class DeployPackageManager
             $status = [
                 'status' => 'error',
                 'reason' => $reason,
+                'mode' => $mode,
+                'database_sync' => $mode === 'full',
                 'build_started_at' => $startedAt,
                 'build_finished_at' => date(DATE_ATOM),
                 'generated_at' => '',

@@ -16,31 +16,43 @@ class DeployPackageBuilder
         $this->deployPath = $this->basePath . '/deploy';
     }
 
-    public function build(): array
+    public function build(string $mode = 'full'): array
     {
+        if (!in_array($mode, ['full', 'light'], true)) {
+            throw new RuntimeException(sprintf('Unsupported deploy mode [%s].', $mode));
+        }
+
         $this->recreateDeployDirectory();
         $this->copyRuntimeFiles();
-        $snapshot = $this->createDatabaseSnapshot();
         $generatedAt = date(DATE_ATOM);
-        $installKey = bin2hex(random_bytes(16));
-        $snapshotJson = $this->encodeJson($snapshot);
-        $snapshotHash = hash('sha256', $snapshotJson);
+        $installKey = $mode === 'full' ? bin2hex(random_bytes(16)) : '';
         $deployment = [
+            'mode' => $mode,
+            'database_sync' => $mode === 'full',
             'install_key' => $installKey,
             'generated_at' => $generatedAt,
-            'snapshot_hash' => $snapshotHash,
+            'snapshot_hash' => '',
             'env_template' => $this->envTemplate(),
         ];
-        $deployment['package_hash'] = hash('sha256', $this->encodeJson($deployment));
 
-        $this->writePhpFile(
-            $this->deployPath . '/database/deploy-snapshot.php',
-            $snapshot
-        );
-        $this->writeJsonFile(
-            $this->deployPath . '/database/deploy-snapshot.json',
-            $snapshotJson
-        );
+        if ($mode === 'full') {
+            $snapshot = $this->createDatabaseSnapshot();
+            $snapshotJson = $this->encodeJson($snapshot);
+            $deployment['snapshot_hash'] = hash('sha256', $snapshotJson);
+
+            $this->writePhpFile(
+                $this->deployPath . '/database/deploy-snapshot.php',
+                $snapshot
+            );
+            $this->writeJsonFile(
+                $this->deployPath . '/database/deploy-snapshot.json',
+                $snapshotJson
+            );
+        } else {
+            $this->removeDeploySnapshotFiles();
+        }
+
+        $deployment['package_hash'] = hash('sha256', $this->encodeJson($deployment));
 
         $this->writePhpFile(
             $this->deployPath . '/storage/app/deployment.php',
@@ -51,13 +63,15 @@ class DeployPackageBuilder
             $this->encodeJson($deployment)
         );
 
-        $this->writeInstructions($installKey);
+        $this->writeInstructions($installKey, $mode);
         $this->prepareRuntimeDirectories();
 
         return [
             'path' => $this->deployPath,
             'install_key' => $installKey,
             'generated_at' => $generatedAt,
+            'mode' => $mode,
+            'database_sync' => $mode === 'full',
         ];
     }
 
@@ -201,24 +215,46 @@ class DeployPackageBuilder
         ];
     }
 
-    private function writeInstructions(string $installKey): void
+    private function writeInstructions(string $installKey, string $mode): void
     {
-        $contents = implode(PHP_EOL, [
-            'DEPLOY PACKAGE',
-            '',
-            '1. Upload the full contents of this deploy directory to the target FTP document root.',
-            '2. If this is the first deployment, open the target domain in the browser.',
-            '3. In the installer, enter:',
-            '   - install key: ' . $installKey,
-            '   - DB host, port, database, user, password',
-            '4. Installer restores the packaged database snapshot and finishes setup automatically.',
-            '5. Every next upload of a freshly generated package auto-syncs the database on the first request.',
-            '6. Deployment sync writes a trace to storage/logs/deploy-sync.log.',
-            '',
-            'Generated at: ' . date(DATE_ATOM),
-        ]) . PHP_EOL;
+        if ($mode === 'light') {
+            $lines = [
+                'DEPLOY PACKAGE - LIGHT',
+                '',
+                '1. Upload the full contents of this deploy directory to the target FTP document root.',
+                '2. This package updates application files only.',
+                '3. It does not contain a database snapshot and will not sync production database content.',
+                '4. Use it only for an already installed production site with an existing .env file.',
+                '5. Do not delete production uploads or .env during the FTP upload.',
+                '',
+                'Generated at: ' . date(DATE_ATOM),
+            ];
+        } else {
+            $lines = [
+                'DEPLOY PACKAGE',
+                '',
+                '1. Upload the full contents of this deploy directory to the target FTP document root.',
+                '2. If this is the first deployment, open the target domain in the browser.',
+                '3. In the installer, enter:',
+                '   - install key: ' . $installKey,
+                '   - DB host, port, database, user, password',
+                '4. Installer restores the packaged database snapshot and finishes setup automatically.',
+                '5. Every next upload of a freshly generated package auto-syncs the database on the first request.',
+                '6. Deployment sync writes a trace to storage/logs/deploy-sync.log.',
+                '',
+                'Generated at: ' . date(DATE_ATOM),
+            ];
+        }
+
+        $contents = implode(PHP_EOL, $lines) . PHP_EOL;
 
         file_put_contents($this->deployPath . '/INSTALL_INSTRUCTIONS.txt', $contents);
+    }
+
+    private function removeDeploySnapshotFiles(): void
+    {
+        @unlink($this->deployPath . '/database/deploy-snapshot.php');
+        @unlink($this->deployPath . '/database/deploy-snapshot.json');
     }
 
     private function prepareRuntimeDirectories(): void
